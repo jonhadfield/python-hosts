@@ -12,7 +12,6 @@ class HostsEntry(object):
         self.names = names
 
 
-
 class Hosts(object):
     """ A hosts file. """
     def __init__(self, path=None):
@@ -35,7 +34,6 @@ class Hosts(object):
     @staticmethod
     def is_ipv4(entry):
         """ Checks if a string is a valid ipv4 address. """
-
         try:
             if socket.inet_aton(entry):
                 return True
@@ -112,7 +110,15 @@ class Hosts(object):
         self.write()
         return True
 
-    def count(self, address=None, names=None, comment=None):
+    def count(self, entry=None, address=None, names=None, comment=None):
+        """
+        Count the number of address, name or comment matches
+        in the given HostsEntry instance or supplied values
+        :param address:
+        :param names:
+        :param comment:
+        :return: A dict listing the number of address, name and comment matches
+        """
         num_address_matches = 0
         num_name_matches = 0
         num_comment_matches = 0
@@ -120,17 +126,30 @@ class Hosts(object):
             existing_names = host.names
             existing_host_address = host.address
             existing_comment = host.comment
-            if host.entry_type == "ipv4" or host.entry_type == "ipv6":
-                if all((existing_names, names)) and \
-                        set(names).intersection(existing_names):
-                    print existing_names
-                    num_name_matches += 1
-                if existing_host_address and existing_host_address == address:
-                    print existing_host_address
-                    num_address_matches += 1
-            if host.entry_type == "comment":
-                if existing_comment == comment:
-                    num_comment_matches += 1
+            if entry:
+                if entry.get('entry_type') == "ipv4" or entry.get('entry_type') == "ipv6":
+                    if all((existing_names, names)) and \
+                            set(names).intersection(existing_names):
+                        print existing_names
+                        num_name_matches += 1
+                    if existing_host_address and existing_host_address == address:
+                        print existing_host_address
+                        num_address_matches += 1
+                if entry.get('entry_type') == "comment":
+                    if existing_comment == comment:
+                        num_comment_matches += 1
+            else:
+                if host.entry_type == "ipv4" or host.entry_type == "ipv6":
+                    if all((existing_names, names)) and \
+                            set(names).intersection(existing_names):
+                        print existing_names
+                        num_name_matches += 1
+                    if existing_host_address and existing_host_address == address:
+                        print existing_host_address
+                        num_address_matches += 1
+                if host.entry_type == "comment":
+                    if existing_comment == comment:
+                        num_comment_matches += 1
         return {'address_matches': num_address_matches,
                 'name_matches': num_name_matches,
                 'comment_matches': num_comment_matches}
@@ -151,16 +170,26 @@ class Hosts(object):
         removed = 0
         removal_list = []
         for existing_entry in self.entries:
-            if existing_entry.names and passed_names:
-                names_inter = set(existing_entry.names).intersection(passed_names)
-                if any((existing_entry.address == passed_address,
-                        existing_entry.names == passed_names,
-                        names_inter)):
+            if entry:
+                if existing_entry.names and entry.get("names"):
+                    names_inter = set(existing_entry.names).intersection(entry.get("names"))
+                    if any((existing_entry.address == entry.get('address'),
+                           existing_entry.names == entry.get('names'),
+                            names_inter)):
+                        removal_list.append(existing_entry)
+                        removed += 1
+                if entry.get('comment') and existing_entry.comment == entry.get('comment'):
                     removal_list.append(existing_entry)
-                    removed += 1
-            if passed_comment and existing_entry.comment == passed_comment:
-                removal_list.append(existing_entry)
-                print "existing entry {}".format(existing_entry)
+            else:
+                if existing_entry.names and passed_names:
+                    names_inter = set(existing_entry.names).intersection(passed_names)
+                    if any((existing_entry.address == passed_address,
+                            existing_entry.names == passed_names,
+                            names_inter)):
+                        removal_list.append(existing_entry)
+                        removed += 1
+                if passed_comment and existing_entry.comment == passed_comment:
+                    removal_list.append(existing_entry)
         for entry_to_remove in removal_list:
             self.entries.remove(entry_to_remove)
         self.write()
@@ -195,7 +224,5 @@ class Hosts(object):
                     self.entries.append(HostsEntry(entry_type=entry_type,
                                                    address=chunked_entry[0],
                                                    names=chunked_entry[1:]))
-        return
-
 
 
