@@ -63,14 +63,14 @@ class Hosts(object):
                     hosts_file.write("\n")
                 if line.entry_type == 'ipv4':
                     hosts_file.write(
-                        "{}\t{}\n".format(
+                        "{0}\t{1}\n".format(
                             line.address,
                             ' '.join(line.names),
                         )
                     )
                 if line.entry_type == 'ipv6':
                        hosts_file.write(
-                           "{}\t{}\n".format(
+                           "{0}\t{1}\n".format(
                            line.address,
                             ' '.join(line.names),
                            )
