@@ -3,6 +3,8 @@ __pycache__/
 tests/__pycache__/
 hosts/__pycache__/
 *.py[cod]
+.idea/
+*.swp
 
 # C extensions
 *.so
