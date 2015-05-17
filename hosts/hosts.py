@@ -2,20 +2,54 @@ __author__ = 'Jon Hadfield'
 import sys
 import socket
 
+def is_ipv4(entry):
+    """ Checks if a string is a valid ipv4 address. """
+    try:
+        if socket.inet_aton(entry):
+            return True
+    except socket.error:
+        return False
+
+def is_ipv6(entry):
+    """ Checks if a string is a valid ipv6 address. """
+    try:
+        if socket.inet_pton(socket.AF_INET6, entry):
+            return True
+    except socket.error:
+        return False
+
 
 class HostsEntry(object):
     """ An entry in a hosts file. """
     def __init__(self, entry_type=None, address=None, comment=None, names=None):
+        if not entry_type or entry_type not in ('ipv4', 'ipv6', 'comment', 'blank'):
+            raise Exception('entry_type invalid or not specified')
+
+        if entry_type == 'comment' and not comment:
+            raise Exception('entry_type comment supplied without value.')
+
+        if entry_type in ('ipv4', 'ipv6'):
+            if not all((address, names)):
+                raise Exception('Address and Name(s) must be specified.')
+
         self.entry_type = entry_type
         self.address = address
         self.comment = comment
         self.names = names
 
-    def is_valid(self):
-        if self.entry_type:
-            return True
-        return False
-
+    @staticmethod
+    def get_entry_type(hosts_entry):
+        if hosts_entry[0] == "#":
+            return 'comment'
+        if hosts_entry[0] == "\n":
+            return 'blank'
+        entry_chunks = hosts_entry.split()
+        if is_ipv4(entry_chunks[0]):
+            return "ipv4"
+        if is_ipv6(entry_chunks[0]):
+            return "ipv6"
+        else:
+            return False
 
 class Hosts(object):
     """ A hosts file. """
@@ -35,24 +69,6 @@ class Hosts(object):
             exit("cannot determine platform")
         self.entries = []
         self.populate_entries()
-
-    @staticmethod
-    def is_ipv4(entry):
-        """ Checks if a string is a valid ipv4 address. """
-        try:
-            if socket.inet_aton(entry):
-                return True
-        except socket.error:
-            return False
-
-    @staticmethod
-    def is_ipv6(entry):
-        """ Checks if a string is a valid ipv6 address. """
-        try:
-            if socket.inet_pton(socket.AF_INET6, entry):
-                return True
-        except socket.error:
-            return False
 
     def write(self):
         with open(self.hosts_path, 'w') as hosts_file:
@@ -108,7 +124,7 @@ class Hosts(object):
         :param entry: An instance of HostsEntry
         :return: A dict listing the number of address, name and comment matches
         """
-        if not entry or not entry.is_valid:
+        if not entry:
             exit('valid entry not provided')
 
         num_address_matches = 0
@@ -177,24 +193,11 @@ class Hosts(object):
             return True
         return False
 
-    def get_entry_type(self, hosts_entry):
-        if hosts_entry[0] == "#":
-            return 'comment'
-        if hosts_entry[0] == "\n":
-            return 'blank'
-        entry_chunks = hosts_entry.split()
-        if self.is_ipv4(entry_chunks[0]):
-            return "ipv4"
-        if self.is_ipv6(entry_chunks[0]):
-            return "ipv6"
-        else:
-            return False
-
     def populate_entries(self):
         with open(self.hosts_path, 'r') as hosts_file:
             hosts_entries = [line for line in hosts_file]
             for hosts_entry in hosts_entries:
-                entry_type = self.get_entry_type(hosts_entry)
+                entry_type = HostsEntry.get_entry_type(hosts_entry)
                 if entry_type == "comment":
                     self.entries.append(HostsEntry(entry_type="comment", comment=hosts_entry))
                 if entry_type == "blank":
