@@ -1,18 +1,9 @@
 import sys
 import pytest
 from os import path
-sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
+sys.path.append( path.dirname(path.dirname( path.abspath(__file__))))
 from hosts.hosts import Hosts, HostsEntry
 
-#@pytest.fixture()
-#def temp_path(tmpdir):
-#    hosts_file = tmpdir.mkdir("etc").join("hosts")
-#    hosts_file.write("localhost\t127.0.0.1")
-#    print "--"
-#    print hosts_file.__class__.__name__
-#    print hosts_file.strpath
-#    print "--"
-#    return hosts_file
 
 def test_add_single_ipv4_host(tmpdir):
     ''' add an ipv4 type entry '''
@@ -23,6 +14,7 @@ def test_add_single_ipv4_host(tmpdir):
     hosts.add(force=False, entry_type='ipv4', address='123.123.123.123', names=['test.example.com'])
     counts = hosts.count(address="123.123.123.123")
     assert hosts.count(address="123.123.123.123").get('address_matches') == 1
+    assert hosts.count(address="127.0.0.1").get('address_matches') == 1
 
 def test_replace_ipv4_host_where_ip_differs(tmpdir):
     ''' replace an ipv4 entry where ip differs '''
@@ -32,7 +24,6 @@ def test_replace_ipv4_host_where_ip_differs(tmpdir):
     hosts_entries = Hosts(path=hosts_file.strpath)
     hosts_entries.add(force=True, entry_type='ipv4', address='82.132.132.133', names=['example.com', 'example'])
     counts = hosts_entries.count(address="82.132.132.133")
-    print counts
     assert counts.get('address_matches') == 1
 
 def test_replace_ipv4_host_where_name_differs(tmpdir):
