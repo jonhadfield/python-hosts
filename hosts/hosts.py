@@ -4,6 +4,7 @@ import socket
 
 
 class HostsEntry(object):
+    """ An entry in a hosts file. """
     def __init__(self, entry_type=None, address=None, comment=None, names=None):
         self.entry_type = entry_type
         self.address = address
@@ -13,13 +14,18 @@ class HostsEntry(object):
 
 
 class Hosts(object):
+    """ A hosts file. """
     def __init__(self, path=None):
+        """
+        Returns a list of all entries in the hosts file.
+        Each entry is represented in the form of a dict.
+        """
         platform = sys.platform
         if path:
             self.hosts_path = path
         elif 'linux' in platform or 'darwin' == platform:
             self.hosts_path = '/etc/hosts'
-        elif any(platform == 'win32', platform == 'windows'):
+        elif any((platform == 'win32', platform == 'windows')):
             self.hosts_path = r'c:\windows\system32\drivers\etc\hosts'
         else:
             exit("cannot determine platform")
@@ -28,6 +34,8 @@ class Hosts(object):
 
     @staticmethod
     def is_ipv4(entry):
+        """ Checks if a string is a valid ipv4 address. """
+
         try:
             if socket.inet_aton(entry):
                 return True
@@ -36,6 +44,7 @@ class Hosts(object):
 
     @staticmethod
     def is_ipv6(entry):
+        """ Checks if a string is a valid ipv6 address. """
         try:
             if socket.inet_pton(socket.AF_INET6, entry):
                 return True
@@ -64,28 +73,44 @@ class Hosts(object):
                         )
                     )
 
-    def add(self, entry_type, address=None,
+    def add(self, entry=None, entry_type=None, address=None,
             names=None, comment=None, force=False):
-        entry = HostsEntry(entry_type=entry_type,
-                           address=address, names=names, comment=comment)
-        if entry.entry_type == "comment":
+        """
+        Adds an entry to a host file.
+        :param entry: An instance of HostsEntry
+        :param entry_type: The type of entry
+        :param address: The ipv4|ipv6 address
+        :param names: The name(s) that will resolve to the specified address
+        :param comment: The comment value
+        :param force: Remove conflicting, existing instances first
+        :return: True if successfully added to hosts file
+        """
+        if entry:
+            new_entry = entry
+        else:
+            new_entry = HostsEntry(entry_type=entry_type,
+                                   address=address,
+                                   names=names,
+                                   comment=comment)
+        if new_entry.entry_type == "comment":
             existing = self.count(
-                comment=entry.comment
+                comment=new_entry.comment
             ).get('num_comment_matches')
             if existing:
                 return False
         elif entry_type == "ipv4" or entry_type == "ipv6":
-            existing = self.count(address=entry.address,
-                                  names=entry.names)
-	    print "number of existing = {}".format(existing)
+            existing = self.count(address=new_entry.address,
+                                  names=new_entry.names)
             existing_addresses = existing.get('num_address_matches')
             existing_names = existing.get('num_name_matches')
             if not force and (existing_addresses or existing_names):
                 return False
             elif force:
-                self.remove(address=address, passed_names=names)
-        self.entries.append(entry)
+                self.remove(passed_address=address,
+                            passed_names=names)
+        self.entries.append(new_entry)
         self.write()
+        return True
 
     def count(self, address=None, names=None, comment=None):
         num_address_matches = 0
@@ -106,22 +131,39 @@ class Hosts(object):
             if host.entry_type == "comment":
                 if existing_comment == comment:
                     num_comment_matches += 1
-        return {'address_matches':num_address_matches,
-                'name_matches':num_name_matches,
-                'comment_matches':num_comment_matches}
+        return {'address_matches': num_address_matches,
+                'name_matches': num_name_matches,
+                'comment_matches': num_comment_matches}
 
-    def remove(self, address=None, passed_names=None, comment=None):
+    def remove(self,
+               entry=None,
+               passed_address=None,
+               passed_names=None,
+               passed_comment=None):
+        """
+        Remove an entry from a hosts file
+        :param entry: An instance of HostsEntry
+        :param passed_address: The address of the host to remove
+        :param passed_names: The name(s) of the host to remove
+        :param passed_comment: The comment to remove
+        :return:
+        """
         removed = 0
         removal_list = []
-        for entry in self.entries:
-            names_inter = []
-            if entry.names and passed_names:
-                names_inter = set(entry.names).intersection(passed_names)
-                if any((entry.address == address, entry.names == passed_names, names_inter)):
-                    removal_list.append(entry)
+        for existing_entry in self.entries:
+            if existing_entry.names and passed_names:
+                names_inter = set(existing_entry.names).intersection(passed_names)
+                if any((existing_entry.address == passed_address,
+                        existing_entry.names == passed_names,
+                        names_inter)):
+                    removal_list.append(existing_entry)
                     removed += 1
+            if passed_comment and existing_entry.comment == passed_comment:
+                removal_list.append(existing_entry)
+                print "existing entry {}".format(existing_entry)
         for entry_to_remove in removal_list:
             self.entries.remove(entry_to_remove)
+        self.write()
         if removed > 0:
             return True
         return False
@@ -150,7 +192,9 @@ class Hosts(object):
                     self.entries.append(HostsEntry(entry_type="blank"))
                 if entry_type == "ipv4" or entry_type == "ipv6":
                     chunked_entry = hosts_entry.split()
-                    self.entries.append(HostsEntry(entry_type=entry_type, address=chunked_entry[0], names=chunked_entry[1:]))
+                    self.entries.append(HostsEntry(entry_type=entry_type,
+                                                   address=chunked_entry[0],
+                                                   names=chunked_entry[1:]))
         return
 
 
