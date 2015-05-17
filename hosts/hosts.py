@@ -23,6 +23,11 @@ class HostsEntry(object):
 
     @staticmethod
     def get_entry_type(hosts_entry):
+        """
+        Return the type of entry for the line of hosts file passed
+        :param hosts_entry: A line from the hosts file
+        :return: comment | blank | ipv4 | ipv6
+        """
         if hosts_entry[0] == "#":
             return 'comment'
         if hosts_entry[0] == "\n":
@@ -69,12 +74,10 @@ class Hosts(object):
                         )
                     )
                 if line.entry_type == 'ipv6':
-                       hosts_file.write(
-                           "{0}\t{1}\n".format(
-                           line.address,
-                            ' '.join(line.names),
-                           )
-                       )
+                    hosts_file.write(
+                        "{0}\t{1}\n".format(
+                            line.address,
+                            ' '.join(line.names),))
 
     def add(self, entry=None, force=False):
         """
