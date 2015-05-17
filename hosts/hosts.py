@@ -1,12 +1,16 @@
-__author__ = 'Jon Hadfield'
+# -*- coding: utf-8 -*-
+""" This module contains the classes required to manage a hosts file """
 import sys
-from utils import is_ipv4, is_ipv6
+from .utils import is_ipv4, is_ipv6
 
 
 class HostsEntry(object):
     """ An entry in a hosts file. """
     def __init__(self, entry_type=None, address=None, comment=None, names=None):
-        if not entry_type or entry_type not in ('ipv4', 'ipv6', 'comment', 'blank'):
+        if not entry_type or entry_type not in ('ipv4',
+                                                'ipv6',
+                                                'comment',
+                                                'blank'):
             raise Exception('entry_type invalid or not specified')
 
         if entry_type == 'comment' and not comment:
@@ -23,6 +27,11 @@ class HostsEntry(object):
 
     @staticmethod
     def get_entry_type(hosts_entry):
+        """
+        Return the type of entry for the line of hosts file passed
+        :param hosts_entry: A line from the hosts file
+        :return: comment | blank | ipv4 | ipv6
+        """
         if hosts_entry[0] == "#":
             return 'comment'
         if hosts_entry[0] == "\n":
@@ -55,6 +64,9 @@ class Hosts(object):
         self.populate_entries()
 
     def write(self):
+        """
+        Write the list of host entries back to the hosts file.
+        """
         with open(self.hosts_path, 'w') as hosts_file:
             for line in self.entries:
                 if line.entry_type == 'comment':
@@ -63,18 +75,16 @@ class Hosts(object):
                     hosts_file.write("\n")
                 if line.entry_type == 'ipv4':
                     hosts_file.write(
-                        "{}\t{}\n".format(
+                        "{0}\t{1}\n".format(
                             line.address,
                             ' '.join(line.names),
                         )
                     )
                 if line.entry_type == 'ipv6':
-                       hosts_file.write(
-                           "{}\t{}\n".format(
-                           line.address,
-                            ' '.join(line.names),
-                           )
-                       )
+                    hosts_file.write(
+                        "{0}\t{1}\n".format(
+                            line.address,
+                            ' '.join(line.names),))
 
     def add(self, entry=None, force=False):
         """
@@ -122,7 +132,8 @@ class Hosts(object):
                 if all((existing_names, entry.names)) and \
                         set(entry.names).intersection(existing_names):
                     num_name_matches += 1
-                if existing_host_address and existing_host_address == entry.address:
+                if existing_host_address and \
+                        existing_host_address == entry.address:
                     num_address_matches += 1
             if entry.entry_type == "comment":
                 if existing_comment == entry.comment:
@@ -149,9 +160,10 @@ class Hosts(object):
         for existing_entry in self.entries:
             if entry:
                 if existing_entry.names and entry.get("names"):
-                    names_inter = set(existing_entry.names).intersection(entry.get("names"))
+                    names_inter = set(
+                        existing_entry.names).intersection(entry.get("names"))
                     if any((existing_entry.address == entry.get('address'),
-                           existing_entry.names == entry.get('names'),
+                            existing_entry.names == entry.get('names'),
                             names_inter)):
                         removal_list.append(existing_entry)
                         removed += 1
@@ -159,7 +171,8 @@ class Hosts(object):
                     removal_list.append(existing_entry)
             else:
                 if existing_entry.names and passed_names:
-                    names_inter = set(existing_entry.names).intersection(passed_names)
+                    names_inter = set(
+                        existing_entry.names).intersection(passed_names)
                     if any((existing_entry.address == passed_address,
                             existing_entry.names == passed_names,
                             names_inter)):
@@ -175,6 +188,10 @@ class Hosts(object):
         return False
 
     def populate_entries(self):
+        """
+        Read all hosts file entries from the hosts file specified
+        and store them as HostEntry's in an instance of Hosts.
+        """
         try:
             with open(self.hosts_path, 'r') as hosts_file:
                 hosts_entries = [line for line in hosts_file]
