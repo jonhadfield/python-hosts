@@ -11,6 +11,11 @@ class HostsEntry(object):
         self.comment = comment
         self.names = names
 
+    def is_valid(self):
+        if self.entry_type:
+            return True
+        return False
+
 
 class Hosts(object):
     """ A hosts file. """
@@ -71,54 +76,41 @@ class Hosts(object):
                         )
                     )
 
-    def add(self, entry=None, entry_type=None, address=None,
-            names=None, comment=None, force=False):
+    def add(self, entry=None, force=False):
         """
         Adds an entry to a host file.
         :param entry: An instance of HostsEntry
-        :param entry_type: The type of entry
-        :param address: The ipv4|ipv6 address
-        :param names: The name(s) that will resolve to the specified address
-        :param comment: The comment value
         :param force: Remove conflicting, existing instances first
         :return: True if successfully added to hosts file
         """
-        if entry:
-            new_entry = entry
-        else:
-            new_entry = HostsEntry(entry_type=entry_type,
-                                   address=address,
-                                   names=names,
-                                   comment=comment)
+        new_entry = entry
         if new_entry.entry_type == "comment":
-            existing = self.count(
-                comment=new_entry.comment
-            ).get('num_comment_matches')
+            existing = self.count(new_entry).get('num_comment_matches')
             if existing:
                 return False
-        elif entry_type == "ipv4" or entry_type == "ipv6":
-            existing = self.count(address=new_entry.address,
-                                  names=new_entry.names)
+        elif new_entry.entry_type == "ipv4" or new_entry.entry_type == "ipv6":
+            existing = self.count(new_entry)
             existing_addresses = existing.get('num_address_matches')
             existing_names = existing.get('num_name_matches')
             if not force and (existing_addresses or existing_names):
                 return False
             elif force:
-                self.remove(passed_address=address,
-                            passed_names=names)
+                self.remove(passed_address=new_entry.address,
+                            passed_names=new_entry.names)
         self.entries.append(new_entry)
         self.write()
         return True
 
-    def count(self, entry=None, address=None, names=None, comment=None):
+    def count(self, entry=None):
         """
         Count the number of address, name or comment matches
         in the given HostsEntry instance or supplied values
-        :param address:
-        :param names:
-        :param comment:
+        :param entry: An instance of HostsEntry
         :return: A dict listing the number of address, name and comment matches
         """
+        if not entry or not entry.is_valid:
+            exit('valid entry not provided')
+
         num_address_matches = 0
         num_name_matches = 0
         num_comment_matches = 0
@@ -126,30 +118,18 @@ class Hosts(object):
             existing_names = host.names
             existing_host_address = host.address
             existing_comment = host.comment
-            if entry:
-                if entry.get('entry_type') == "ipv4" or entry.get('entry_type') == "ipv6":
-                    if all((existing_names, names)) and \
-                            set(names).intersection(existing_names):
-                        print existing_names
-                        num_name_matches += 1
-                    if existing_host_address and existing_host_address == address:
-                        print existing_host_address
-                        num_address_matches += 1
-                if entry.get('entry_type') == "comment":
-                    if existing_comment == comment:
-                        num_comment_matches += 1
-            else:
-                if host.entry_type == "ipv4" or host.entry_type == "ipv6":
-                    if all((existing_names, names)) and \
-                            set(names).intersection(existing_names):
-                        print existing_names
-                        num_name_matches += 1
-                    if existing_host_address and existing_host_address == address:
-                        print existing_host_address
-                        num_address_matches += 1
-                if host.entry_type == "comment":
-                    if existing_comment == comment:
-                        num_comment_matches += 1
+            if entry.entry_type == "ipv4" or entry.entry_type == "ipv6":
+                if all((existing_names, entry.names)) and \
+                        set(entry.names).intersection(existing_names):
+                    print existing_names
+                    num_name_matches += 1
+                if existing_host_address and existing_host_address == entry.address:
+                    print existing_host_address
+                    num_address_matches += 1
+            if entry.entry_type == "comment":
+                if existing_comment == entry.comment:
+                    print existing_comment
+                    num_comment_matches += 1
         return {'address_matches': num_address_matches,
                 'name_matches': num_name_matches,
                 'comment_matches': num_comment_matches}
@@ -178,7 +158,7 @@ class Hosts(object):
                             names_inter)):
                         removal_list.append(existing_entry)
                         removed += 1
-                if entry.get('comment') and existing_entry.comment == entry.get('comment'):
+                if entry.comment and existing_entry.comment == entry.comment:
                     removal_list.append(existing_entry)
             else:
                 if existing_entry.names and passed_names:
