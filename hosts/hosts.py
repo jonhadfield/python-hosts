@@ -11,6 +11,7 @@ class HostsEntry(object):
         self.names = names
 
 
+
 class Hosts(object):
     def __init__(self, path=None):
         platform = sys.platform
@@ -24,7 +25,6 @@ class Hosts(object):
             exit("cannot determine platform")
         self.entries = []
         self.populate_entries()
-
 
     @staticmethod
     def is_ipv4(entry):
@@ -77,6 +77,7 @@ class Hosts(object):
         elif entry_type == "ipv4" or entry_type == "ipv6":
             existing = self.count(address=entry.address,
                                   names=entry.names)
+	    print "number of existing = {}".format(existing)
             existing_addresses = existing.get('num_address_matches')
             existing_names = existing.get('num_name_matches')
             if not force and (existing_addresses or existing_names):
@@ -116,9 +117,9 @@ class Hosts(object):
             names_inter = []
             if entry.names and passed_names:
                 names_inter = set(entry.names).intersection(passed_names)
-            if any((entry.comment == comment, entry.address == address, entry.names == passed_names, names_inter)):
-                removal_list.append(entry)
-                removed += 1
+                if any((entry.address == address, entry.names == passed_names, names_inter)):
+                    removal_list.append(entry)
+                    removed += 1
         for entry_to_remove in removal_list:
             self.entries.remove(entry_to_remove)
         if removed > 0:
