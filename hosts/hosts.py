@@ -69,12 +69,12 @@ class Hosts(object):
                         )
                     )
                 if line.entry_type == 'ipv6':
-                    hosts_file.write(
-                        "{}\t{}\n".format(
-                            line.address,
+                       hosts_file.write(
+                           "{}\t{}\n".format(
+                           line.address,
                             ' '.join(line.names),
-                        )
-                    )
+                           )
+                       )
 
     def add(self, entry=None, force=False):
         """
@@ -183,7 +183,8 @@ class Hosts(object):
             for hosts_entry in hosts_entries:
                 entry_type = HostsEntry.get_entry_type(hosts_entry)
                 if entry_type == "comment":
-                    self.entries.append(HostsEntry(entry_type="comment", comment=hosts_entry))
+                    self.entries.append(HostsEntry(entry_type="comment",
+                                                   comment=hosts_entry))
                 if entry_type == "blank":
                     self.entries.append(HostsEntry(entry_type="blank"))
                 if entry_type == "ipv4" or entry_type == "ipv6":
