@@ -121,14 +121,11 @@ class Hosts(object):
             if entry.entry_type == "ipv4" or entry.entry_type == "ipv6":
                 if all((existing_names, entry.names)) and \
                         set(entry.names).intersection(existing_names):
-                    print existing_names
                     num_name_matches += 1
                 if existing_host_address and existing_host_address == entry.address:
-                    print existing_host_address
                     num_address_matches += 1
             if entry.entry_type == "comment":
                 if existing_comment == entry.comment:
-                    print existing_comment
                     num_comment_matches += 1
         return {'address_matches': num_address_matches,
                 'name_matches': num_name_matches,
@@ -178,19 +175,20 @@ class Hosts(object):
         return False
 
     def populate_entries(self):
-        with open(self.hosts_path, 'r') as hosts_file:
-            hosts_entries = [line for line in hosts_file]
-            for hosts_entry in hosts_entries:
-                entry_type = HostsEntry.get_entry_type(hosts_entry)
-                if entry_type == "comment":
-                    self.entries.append(HostsEntry(entry_type="comment",
-                                                   comment=hosts_entry))
-                if entry_type == "blank":
-                    self.entries.append(HostsEntry(entry_type="blank"))
-                if entry_type == "ipv4" or entry_type == "ipv6":
-                    chunked_entry = hosts_entry.split()
-                    self.entries.append(HostsEntry(entry_type=entry_type,
-                                                   address=chunked_entry[0],
-                                                   names=chunked_entry[1:]))
-
-
+        try:
+            with open(self.hosts_path, 'r') as hosts_file:
+                hosts_entries = [line for line in hosts_file]
+                for hosts_entry in hosts_entries:
+                    entry_type = HostsEntry.get_entry_type(hosts_entry)
+                    if entry_type == "comment":
+                        self.entries.append(HostsEntry(entry_type="comment",
+                                                       comment=hosts_entry))
+                    if entry_type == "blank":
+                        self.entries.append(HostsEntry(entry_type="blank"))
+                    if entry_type == "ipv4" or entry_type == "ipv6":
+                        chunked_entry = hosts_entry.split()
+                        self.entries.append(HostsEntry(entry_type=entry_type,
+                                                       address=chunked_entry[0],
+                                                       names=chunked_entry[1:]))
+        except IOError:
+            exit("File not found: {}".format(self.hosts_path))
