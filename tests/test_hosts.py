@@ -11,7 +11,6 @@ def test_add_single_ipv4_host(tmpdir):
     """
     hosts_file = tmpdir.mkdir("etc").join("hosts")
     hosts_file.write("127.0.0.1\tlocalhost")
-    print hosts_file.strpath
     hosts = Hosts(path=hosts_file.strpath)
     new_entry = HostsEntry(entry_type='ipv4', address='123.123.123.123', names=['test.example.com'])
     hosts.add(entry=new_entry, force=False)
