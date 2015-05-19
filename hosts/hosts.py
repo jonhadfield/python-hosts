@@ -116,8 +116,7 @@ class Hosts(object):
             if not force and (existing_addresses or existing_names):
                 return False
             elif force:
-                self.remove(passed_address=new_entry.address,
-                            passed_names=new_entry.names)
+                self.remove(new_entry)
         self.entries.append(new_entry)
         self.write()
         return True
@@ -150,17 +149,10 @@ class Hosts(object):
                 'name_matches': num_name_matches,
                 'comment_matches': num_comment_matches}
 
-    def remove(self,
-               entry=None,
-               passed_address=None,
-               passed_names=None,
-               passed_comment=None):
+    def remove(self, entry=None):
         """
         Remove an entry from a hosts file
         :param entry: An instance of HostsEntry
-        :param passed_address: The address of the host to remove
-        :param passed_names: The name(s) of the host to remove
-        :param passed_comment: The comment to remove
         :return:
         """
         removed = 0
@@ -176,17 +168,6 @@ class Hosts(object):
                         removal_list.append(existing_entry)
                         removed += 1
                 if entry.comment and existing_entry.comment == entry.comment:
-                    removal_list.append(existing_entry)
-            else:
-                if existing_entry.names and passed_names:
-                    names_inter = set(
-                        existing_entry.names).intersection(passed_names)
-                    if any((existing_entry.address == passed_address,
-                            existing_entry.names == passed_names,
-                            names_inter)):
-                        removal_list.append(existing_entry)
-                        removed += 1
-                if passed_comment and existing_entry.comment == passed_comment:
                     removal_list.append(existing_entry)
         for entry_to_remove in removal_list:
             self.entries.remove(entry_to_remove)
