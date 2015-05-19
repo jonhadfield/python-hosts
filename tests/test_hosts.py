@@ -63,6 +63,18 @@ def test_add_single_comment(tmpdir):
     hosts_entries.add(entry=new_entry, force=False, )
     assert hosts_entries.count(entry=new_entry).get('comment_matches') == 1
 
+def test_add_empty_line(tmpdir):
+    """
+    Test addition of an empty line (blank)
+    """
+    comment = 'this is a comment'
+    hosts_file = tmpdir.mkdir("etc").join("hosts")
+    hosts_file.write("\n")
+    hosts_entries = Hosts(path=hosts_file.strpath)
+    new_entry = HostsEntry(entry_type='comment', comment=comment)
+    hosts_entries.add(entry=new_entry, force=False, )
+    assert hosts_entries.count(entry=new_entry).get('comment_matches') == 1
+
 def test_remove_single_comment(tmpdir):
     """
     Test removal of a single comment
