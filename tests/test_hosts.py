@@ -28,6 +28,18 @@ def test_replacement_of_ipv4_entry_where_address_differs(tmpdir):
     counts = hosts_entries.count(new_entry)
     assert counts.get('address_matches') == 1
 
+def test_addition_of_ipv4_entry_where_matching_exists(tmpdir):
+    """
+    Test replacement of an ipv4 entry where just the address differs
+    """
+    hosts_file = tmpdir.mkdir("etc").join("hosts")
+    hosts_file.write("82.132.132.132\texample.com\texample\n")
+    hosts_entries = Hosts(path=hosts_file.strpath)
+    new_entry = HostsEntry(entry_type='ipv4', address='82.132.132.132', names=['something.com', 'example'])
+    hosts_entries.add(entry=new_entry, force=False)
+    counts = hosts_entries.count(new_entry)
+    assert counts.get('address_matches') == 1
+
 def test_replace_ipv4_host_where_name_differs(tmpdir):
     """
     Test replacement of an ipv4 entry where just the name differs
@@ -67,7 +79,7 @@ def test_add_a_comment_that_already_exists(tmpdir):
     """
     Test addition of a comment
     """
-    comment = '#this is a comment'
+    comment = '#this is a comment\n'
     hosts_file = tmpdir.mkdir("etc").join("hosts")
     hosts_file.write('#this is a comment\n')
     hosts_entries = Hosts(path=hosts_file.strpath)
@@ -101,6 +113,19 @@ def test_remove_single_comment(tmpdir):
     assert hosts_entries.count(new_entry).get('comment_matches') == 1
     hosts_entries.remove(new_entry)
     assert hosts_entries.count(new_entry).get('comment_matches') == 0
+
+def test_remove_existing_ipv4_address(tmpdir):
+    """
+    Test removal of an existing ip4 address
+    """
+    ipv4_line = '1.2.3.4 example.com example'
+    hosts_file = tmpdir.mkdir("etc").join("hosts")
+    hosts_file.write(ipv4_line)
+    hosts_entries = Hosts(path=hosts_file.strpath)
+    entry = HostsEntry(entry_type='ipv4', address='1.2.3.4', names=['example.com'])
+    assert hosts_entries.count(entry).get('address_matches') == 1
+    hosts_entries.remove(entry)
+    assert hosts_entries.count(entry).get('address_matches') == 0
 
 def test_hostsentry_initialisation_failure_with_invalid_type():
     """
