@@ -106,13 +106,13 @@ class Hosts(object):
         """
         new_entry = entry
         if new_entry.entry_type == "comment":
-            existing = self.count(new_entry).get('num_comment_matches')
-            if existing:
+            existing = self.count(new_entry).get('comment_matches')
+            if existing and int(existing) >= 1:
                 return False
-        elif new_entry.entry_type == "ipv4" or new_entry.entry_type == "ipv6":
+        if new_entry.entry_type == "ipv4" or new_entry.entry_type == "ipv6":
             existing = self.count(new_entry)
-            existing_addresses = existing.get('num_address_matches')
-            existing_names = existing.get('num_name_matches')
+            existing_addresses = existing.get('address_matches')
+            existing_names = existing.get('name_matches')
             if not force and (existing_addresses or existing_names):
                 return False
             elif force:
@@ -129,9 +129,6 @@ class Hosts(object):
         :param entry: An instance of HostsEntry
         :return: A dict listing the number of address, name and comment matches
         """
-        if not entry:
-            exit('valid entry not provided')
-
         num_address_matches = 0
         num_name_matches = 0
         num_comment_matches = 0
@@ -170,11 +167,11 @@ class Hosts(object):
         removal_list = []
         for existing_entry in self.entries:
             if entry:
-                if existing_entry.names and entry.get("names"):
+                if existing_entry.names and entry.names:
                     names_inter = set(
-                        existing_entry.names).intersection(entry.get("names"))
-                    if any((existing_entry.address == entry.get('address'),
-                            existing_entry.names == entry.get('names'),
+                        existing_entry.names).intersection(entry.names)
+                    if any((existing_entry.address == entry.address,
+                            existing_entry.names == entry.names,
                             names_inter)):
                         removal_list.append(existing_entry)
                         removed += 1
