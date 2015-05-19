@@ -63,11 +63,11 @@ class Hosts(object):
     def determine_hosts_path(platform=None):
         """
         Return the hosts file path based on the supplied
-	or detected platform.
+        or detected platform.
         :param platform: override platform detection
         :return: path of hosts file
         """
-	if not platform:
+        if not platform:
             platform = sys.platform
         if platform.startswith('win'):
             return(r'c:\windows\system32\drivers\etc\hosts')
