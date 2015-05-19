@@ -3,10 +3,8 @@
 import os
 import sys
 
-try:
-    from setuptools import setup, Command
-except ImportError:
-    from distutils.core import setup, Command
+from setuptools import setup, find_packages
+from setuptools.command.test import test as TestCommand
 
 version = "0.1.0"
 
@@ -25,9 +23,9 @@ history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 
 requirements = []
 
-test_requirements = [
-    'pytest'
-]
+#test_requirements = [
+#    'pytest'
+#]
 
 long_description = readme + '\n\n' + history
 
@@ -35,17 +33,20 @@ if sys.argv[-1] == 'readme':
     print(long_description)
     sys.exit()
 
-
-class PyTest(Command):
+class PyTest(TestCommand):
     user_options = [('pytest-args=', 'a', "Arguments to pass to py.test")]
 
     def initialize_options(self):
+        TestCommand.initialize_options(self)
         self.pytest_args = []
 
     def finalize_options(self):
-        pass
+        TestCommand.finalize_options(self)
+        self.test_args = []
+        self.test_suite = True
 
-    def run(self):
+    def run_tests(self):
+        #import here, cause outside the eggs aren't loaded
         import pytest
         errno = pytest.main(self.pytest_args)
         sys.exit(errno)
@@ -82,5 +83,6 @@ setup(
     ),
     cmdclass = {'test': PyTest},
     test_suite='tests',
-    tests_require=test_requirements
+    tests_require=['pytest']
+    #tests_require=test_requirements
 )
