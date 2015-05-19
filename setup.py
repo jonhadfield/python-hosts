@@ -42,7 +42,6 @@ class PyTest(TestCommand):
         self.test_suite = True
 
     def run_tests(self):
-        #import here, cause outside the eggs aren't loaded
         import pytest
         errno = pytest.main(self.pytest_args)
         sys.exit(errno)
@@ -80,5 +79,4 @@ setup(
     cmdclass = {'test': PyTest},
     test_suite='tests',
     tests_require=['pytest']
-    #tests_require=test_requirements
 )
