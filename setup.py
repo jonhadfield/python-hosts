@@ -2,8 +2,6 @@ from __future__ import print_function
 from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
 import io
-import codecs
-import os
 import sys
 
 import hosts 
@@ -46,16 +44,16 @@ setup(
     include_package_data=True,
     platforms='any',
     test_suite='hosts.tests',
-    classifiers = [
+    classifiers=[
         'Programming Language :: Python',
-	'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 2 - Pre-Alpha',
         'Natural Language :: English',
         'Environment :: console',
         'Intended Audience :: System Administrators',
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
-	'Topic :: System :: Operating System',
-	'Topic :: System :: Networking',
+        'Topic :: System :: Operating System',
+        'Topic :: System :: Networking',
         ],
     extras_require={
         'testing': ['pytest'],
