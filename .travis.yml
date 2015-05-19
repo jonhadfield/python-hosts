@@ -3,5 +3,9 @@ python:
     - "2.7"
 before_install:
     - pip install pytest pytest-cov
+    - pip install coveralls
 script:
-    - py.test
+    #- py.test
+    - py.test --cov-report term-missing --cov hosts
+after_success:
+    coveralls
