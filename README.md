@@ -9,10 +9,6 @@ Requirements
 
 Tested on python 2.6, 2.7 and 3.4
 
-Usage
---------------
-
-    TBC
 
 License
 -------
