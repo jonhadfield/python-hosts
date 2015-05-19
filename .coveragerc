@@ -1,0 +1,2 @@
+[run]
+omit = hosts/__init__.py
