@@ -164,6 +164,10 @@ def test_hostsentry_initialisation_failure_with_missing_name_or_address():
     with pytest.raises(Exception):
         HostsEntry(entry_type='ipv6', names=['example.com'])
 
+def test_io_exception_if_hosts_path_does_not_exist():
+    with pytest.raises(IOError):
+        Hosts(path="invalid")
+
 def test_line_break_identified_as_blank(tmpdir):
     new_line = "\n"
     hosts_file = tmpdir.mkdir("etc").join("hosts")
@@ -195,6 +199,3 @@ def test_read_hosts_with_platform_detection():
     test_hosts = Hosts()
     assert isinstance(test_hosts, Hosts)
 
-
-#@pytest.mark.skipif('darwin' not in sys.platform,
-#                    reason="requires OSX")

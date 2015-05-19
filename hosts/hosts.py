@@ -197,4 +197,4 @@ class Hosts(object):
                                                        address=chunked_entry[0],
                                                        names=chunked_entry[1:]))
         except IOError:
-            exit("File not found: {}".format(self.hosts_path))
+            raise
