@@ -4,6 +4,7 @@ import pytest
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..', 'hosts')))
 from hosts import Hosts, HostsEntry
+import exception
 
 
 def test_add_single_ipv4_host(tmpdir):
@@ -165,6 +166,16 @@ def test_hostsentry_initialisation_failure_with_missing_name_or_address():
     with pytest.raises(Exception):
         HostsEntry(entry_type='ipv6', names=['example.com'])
 
+def test_hostsentry_initialisation_failure_with_invalid_address():
+    """
+    Test initialiser returns an exception if type is ipv4|ipv6
+    but address or names (or both) are missing
+    """
+    with pytest.raises(exception.InvalidIPv4Address):
+        HostsEntry(entry_type='ipv4', address='255.255.255.256', names=['example.com', 'example'])
+    with pytest.raises(exception.InvalidIPv6Address):
+        HostsEntry(entry_type='ipv6', address='2001::1::3F', names=['example.com', 'example'])
+
 def test_io_exception_if_hosts_path_does_not_exist():
     with pytest.raises(IOError):
         Hosts(path="invalid")
@@ -181,8 +192,7 @@ def test_get_entry_type():
     assert HostsEntry.get_entry_type('\n') == 'blank'
     assert HostsEntry.get_entry_type('1.2.3.4 example.com example') == 'ipv4'
     assert HostsEntry.get_entry_type('2001:0db8:85a3:0042:1000:8a2e:0370:7334 example.com example') == 'ipv6'
-    assert HostsEntry.get_entry_type('example.com example 1.2.3.4') == False
-
+    assert not HostsEntry.get_entry_type('example.com example 1.2.3.4')
 
 def test_windows_platform_detection(): 
     assert Hosts.determine_hosts_path(platform='windows') == r'c:\windows\system32\drivers\etc\hosts'
