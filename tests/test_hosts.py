@@ -10,7 +10,7 @@ def test_add_single_ipv4_host(tmpdir):
     Test the addition of an ipv4 host succeeds
     """
     hosts_file = tmpdir.mkdir("etc").join("hosts")
-    hosts_file.write("127.0.0.1\tlocalhost")
+    hosts_file.write("127.0.0.1\tlocalhost\n")
     hosts = Hosts(path=hosts_file.strpath)
     new_entry = HostsEntry(entry_type='ipv4', address='123.123.123.123', names=['test.example.com'])
     hosts.add(entry=new_entry, force=False)
@@ -21,7 +21,7 @@ def test_replacement_of_ipv4_entry_where_address_differs(tmpdir):
     Test replacement of an ipv4 entry where just the address differs
     """
     hosts_file = tmpdir.mkdir("etc").join("hosts")
-    hosts_file.write("82.132.132.132\texample.com\texample")
+    hosts_file.write("82.132.132.132\texample.com\texample\n")
     hosts_entries = Hosts(path=hosts_file.strpath)
     new_entry = HostsEntry(entry_type='ipv4', address='82.132.132.133', names=['example.com', 'example'])
     hosts_entries.add(entry=new_entry, force=True)
@@ -33,7 +33,7 @@ def test_replace_ipv4_host_where_name_differs(tmpdir):
     Test replacement of an ipv4 entry where just the name differs
     """
     hosts_file = tmpdir.mkdir("etc").join("hosts")
-    hosts_file.write("82.132.132.132\texample.com\texample")
+    hosts_file.write("82.132.132.132\texample.com\texample\n")
     hosts_entries = Hosts(path=hosts_file.strpath)
     new_entry = HostsEntry(entry_type='ipv4', address='82.132.132.132', names=['example2.com', 'example'])
     hosts_entries.add(entry=new_entry, force=True)
@@ -45,7 +45,7 @@ def test_add_single_ipv6_host(tmpdir):
     Test addition of an ipv6 entry
     """
     hosts_file = tmpdir.mkdir("etc").join("hosts")
-    hosts_file.write("127.0.0.1\tlocalhost")
+    hosts_file.write("127.0.0.1\tlocalhost\n")
     hosts_entries = Hosts(path=hosts_file.strpath)
     new_entry = HostsEntry(entry_type='ipv6', address='::1', names=['localhost6.localdomain6', 'localhost6'])
     hosts_entries.add(entry=new_entry, force=False)
@@ -57,10 +57,22 @@ def test_add_single_comment(tmpdir):
     """
     comment = 'this is a comment'
     hosts_file = tmpdir.mkdir("etc").join("hosts")
-    hosts_file.write("")
+    hosts_file.write("\n")
     hosts_entries = Hosts(path=hosts_file.strpath)
     new_entry = HostsEntry(entry_type='comment', comment=comment)
     hosts_entries.add(entry=new_entry, force=False, )
+    assert hosts_entries.count(entry=new_entry).get('comment_matches') == 1
+
+def test_add_a_comment_that_already_exists(tmpdir):
+    """
+    Test addition of a comment
+    """
+    comment = '#this is a comment'
+    hosts_file = tmpdir.mkdir("etc").join("hosts")
+    hosts_file.write('#this is a comment\n')
+    hosts_entries = Hosts(path=hosts_file.strpath)
+    new_entry = HostsEntry(entry_type='comment', comment=comment)
+    hosts_entries.add(entry=new_entry, force=False)
     assert hosts_entries.count(entry=new_entry).get('comment_matches') == 1
 
 def test_add_empty_line(tmpdir):
@@ -79,8 +91,8 @@ def test_remove_single_comment(tmpdir):
     """
     Test removal of a single comment
     """
-    comment1 = "#127.0.0.1\tlocalhost"
-    comment2 = "# a second comment"
+    comment1 = "#127.0.0.1\tlocalhost\n"
+    comment2 = "# a second comment\n"
     hosts_file = tmpdir.mkdir("etc").join("hosts")
     hosts_file.write(comment1)
     hosts_entries = Hosts(path=hosts_file.strpath)
