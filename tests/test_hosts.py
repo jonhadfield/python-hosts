@@ -122,3 +122,30 @@ def test_line_break_identified_as_blank(tmpdir):
     hosts_entries = Hosts(path=hosts_file.strpath)
     assert hosts_entries.entries[0].entry_type == 'blank'
 
+def test_get_entry_type():
+    assert HostsEntry.get_entry_type('# This is a comment') == 'comment'
+    assert HostsEntry.get_entry_type('\n') == 'blank'
+    assert HostsEntry.get_entry_type('1.2.3.4 example.com example') == 'ipv4'
+    assert HostsEntry.get_entry_type('2001:0db8:85a3:0042:1000:8a2e:0370:7334 example.com example') == 'ipv6'
+    assert HostsEntry.get_entry_type('example.com example 1.2.3.4') == False
+
+
+def test_windows_platform_detection(): 
+    assert Hosts.determine_hosts_path(platform='windows') == r'c:\windows\system32\drivers\etc\hosts'
+
+def test_osx_platform_detection(): 
+    assert Hosts.determine_hosts_path(platform='darwin') == '/etc/hosts'
+
+def test_linux_platform_detection(): 
+    assert Hosts.determine_hosts_path(platform='linux') == '/etc/hosts'
+
+def test_default_platform_detection(): 
+    assert Hosts.determine_hosts_path() == '/etc/hosts'
+
+def test_read_hosts_with_platform_detection():
+    test_hosts = Hosts()
+    assert isinstance(test_hosts, Hosts)
+
+
+#@pytest.mark.skipif('darwin' not in sys.platform,
+#                    reason="requires OSX")
