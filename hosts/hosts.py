@@ -44,6 +44,7 @@ class HostsEntry(object):
         else:
             return False
 
+
 class Hosts(object):
     """ A hosts file. """
     def __init__(self, path=None):
@@ -51,17 +52,27 @@ class Hosts(object):
         Returns a list of all entries in the hosts file.
         Each entry is represented in the form of a dict.
         """
-        platform = sys.platform
+        self.entries = []
         if path:
             self.hosts_path = path
-        elif 'linux' in platform or 'darwin' == platform:
-            self.hosts_path = '/etc/hosts'
-        elif any((platform == 'win32', platform == 'windows')):
-            self.hosts_path = r'c:\windows\system32\drivers\etc\hosts'
         else:
-            exit("cannot determine platform")
-        self.entries = []
+            self.hosts_path = self.determine_hosts_path()
         self.populate_entries()
+
+    @staticmethod
+    def determine_hosts_path(platform=None):
+        """
+        Return the hosts file path based on the supplied
+	or detected platform.
+        :param platform: override platform detection
+        :return: path of hosts file
+        """
+	if not platform:
+            platform = sys.platform
+        if platform.startswith('win'):
+            return(r'c:\windows\system32\drivers\etc\hosts')
+        else: 
+            return('/etc/hosts')
 
     def write(self):
         """
