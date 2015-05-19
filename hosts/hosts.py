@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """ This module contains the classes required to manage a hosts file """
 import sys
+import exception
 from utils import is_ipv4, is_ipv6
 
 
@@ -16,9 +17,17 @@ class HostsEntry(object):
         if entry_type == 'comment' and not comment:
             raise Exception('entry_type comment supplied without value.')
 
-        if entry_type in ('ipv4', 'ipv6'):
+        if entry_type == 'ipv4':
             if not all((address, names)):
                 raise Exception('Address and Name(s) must be specified.')
+            if not is_ipv4(address):
+                raise exception.InvalidIPv4Address()
+
+        if entry_type == 'ipv6':
+            if not all((address, names)):
+                raise Exception('Address and Name(s) must be specified.')
+            if not is_ipv6(address):
+                raise exception.InvalidIPv6Address()
 
         self.entry_type = entry_type
         self.address = address
@@ -70,9 +79,9 @@ class Hosts(object):
         if not platform:
             platform = sys.platform
         if platform.startswith('win'):
-            return(r'c:\windows\system32\drivers\etc\hosts')
+            return r'c:\windows\system32\drivers\etc\hosts'
         else: 
-            return('/etc/hosts')
+            return '/etc/hosts'
 
     def write(self):
         """
