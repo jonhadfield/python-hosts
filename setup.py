@@ -1,49 +1,71 @@
-from __future__ import print_function
-from setuptools import setup, find_packages
-from setuptools.command.test import test as TestCommand
-import io
+#!/usr/bin/env python
+
+import os
 import sys
 
-import hosts 
+try:
+    from setuptools import setup, Command
+except ImportError:
+    from distutils.core import setup, Command
 
-def read(*filenames, **kwargs):
-    encoding = kwargs.get('encoding', 'utf-8')
-    sep = kwargs.get('sep', '\n')
-    buf = []
-    for filename in filenames:
-        with io.open(filename, encoding=encoding) as f:
-            buf.append(f.read())
-    return sep.join(buf)
+version = "0.1.0"
 
-long_description = read('README.txt', 'CHANGES.txt')
+if sys.argv[-1] == 'publish':
+    os.system('python setup.py sdist upload')
+    os.system('python setup.py bdist_wheel upload')
+    sys.exit()
 
-class PyTest(TestCommand):
+if sys.argv[-1] == 'tag':
+    os.system("git tag -a %s -m 'version %s'" % (version, version))
+    os.system("git push --tags")
+    sys.exit()
+
+readme = open('README.rst').read()
+history = open('HISTORY.rst').read().replace('.. :changelog:', '')
+
+requirements = []
+
+test_requirements = [
+    'pytest'
+]
+
+long_description = readme + '\n\n' + history
+
+if sys.argv[-1] == 'readme':
+    print(long_description)
+    sys.exit()
+
+
+class PyTest(Command):
+    user_options = [('pytest-args=', 'a', "Arguments to pass to py.test")]
+
+    def initialize_options(self):
+        self.pytest_args = []
+
     def finalize_options(self):
-        TestCommand.finalize_options(self)
-        self.test_args = []
-        self.test_suite = True
+        pass
 
-    def run_tests(self):
+    def run(self):
         import pytest
-        errcode = pytest.main(self.test_args)
-        sys.exit(errcode)
+        errno = pytest.main(self.pytest_args)
+        sys.exit(errno)
 
 setup(
     name='hosts',
-    version=hosts.__version__,
+    version=version,
     url='http://github.com/jonhadfield/hosts/',
-    license='MIT',
     author='Jon Hadfield',
-    tests_require=['pytest'],
-    install_requires=[],
-    cmdclass={'test': PyTest},
     author_email='jon.hadfield@lessknown.co.uk',
+    install_requires=[],
     description='Manage a hosts file',
     long_description=long_description,
-    packages=['hosts'],
+    packages=[
+        'hosts',
+    ],
+    package_dir={'hosts': 'hosts'},
     include_package_data=True,
     platforms='any',
-    test_suite='hosts.tests',
+    license='MIT',
     classifiers=[
         'Programming Language :: Python',
         'Development Status :: 2 - Pre-Alpha',
@@ -54,8 +76,11 @@ setup(
         'Operating System :: OS Independent',
         'Topic :: System :: Operating System',
         'Topic :: System :: Networking',
-        ],
-    extras_require={
-        'testing': ['pytest'],
-    }
+    ],
+    keywords=(
+        'hosts, Python, network'
+    ),
+    cmdclass = {'test': PyTest},
+    test_suite='tests',
+    tests_require=test_requirements
 )
