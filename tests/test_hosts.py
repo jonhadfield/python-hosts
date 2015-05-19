@@ -77,3 +77,48 @@ def test_remove_single_comment(tmpdir):
     assert hosts_entries.count(new_entry).get('comment_matches') == 1
     hosts_entries.remove(new_entry)
     assert hosts_entries.count(new_entry).get('comment_matches') == 0
+
+def test_hostsentry_initialisation_failure_with_invalid_type():
+    """
+    Test initialiser returns an exception if the type is invalid 
+    """
+    with pytest.raises(Exception):
+        HostsEntry()
+    with pytest.raises(Exception):
+        HostsEntry('IPv4')
+    with pytest.raises(Exception):
+        HostsEntry('IP')
+
+def test_hostsentry_initialisation_failure_with_missing_comment():
+    """
+    Test initialiser returns an exception if comment type
+    is set by no comment is provided
+    """
+    with pytest.raises(Exception):
+        HostsEntry(entry_type='comment')
+    with pytest.raises(Exception):
+        HostsEntry(entry_type='comment', address='1.2.3.4')
+
+def test_hostsentry_initialisation_failure_with_missing_name_or_address():
+    """
+    Test initialiser returns an exception if type is ipv4|ipv6
+    but address or names (or both) are missing
+    """
+    with pytest.raises(Exception):
+        HostsEntry(entry_type='ipv4')
+    with pytest.raises(Exception):
+        HostsEntry(entry_type='ipv4', address='1.2.3.4')
+    with pytest.raises(Exception):
+        HostsEntry(entry_type='ipv4', names=['example.com'])
+    with pytest.raises(Exception):
+        HostsEntry(entry_type='ipv6', address='fe80::1%lo0')
+    with pytest.raises(Exception):
+        HostsEntry(entry_type='ipv6', names=['example.com'])
+
+def test_line_break_identified_as_blank(tmpdir):
+    new_line = "\n"
+    hosts_file = tmpdir.mkdir("etc").join("hosts")
+    hosts_file.write(new_line)
+    hosts_entries = Hosts(path=hosts_file.strpath)
+    assert hosts_entries.entries[0].entry_type == 'blank'
+
