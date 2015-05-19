@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """ This module contains the classes required to manage a hosts file """
 import sys
-from .utils import is_ipv4, is_ipv6
+from utils import is_ipv4, is_ipv6
 
 
 class HostsEntry(object):

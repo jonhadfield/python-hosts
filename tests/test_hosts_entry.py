@@ -1,8 +1,8 @@
 import sys
 import pytest
-from os import path
-sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
-from hosts.hosts import HostsEntry
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..', 'hosts')))
+from hosts import Hosts, HostsEntry
 
 
 def test_create_ipv4_instance():

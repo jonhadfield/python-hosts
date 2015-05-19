@@ -1,9 +1,9 @@
-import sys
 import pytest
 import socket
+import sys
 from os import path
-sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
-from hosts.utils import is_ipv4, is_ipv6
+sys.path.insert(0, path.abspath(path.join(path.dirname( __file__ ), '..', 'hosts')))
+from utils import is_ipv4, is_ipv6
 
 
 def test_ipv4_validation_success():
