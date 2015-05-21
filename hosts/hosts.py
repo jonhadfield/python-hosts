@@ -2,7 +2,7 @@
 """ This module contains the classes required to manage a hosts file """
 import sys
 import exception
-from utils import is_ipv4, is_ipv6
+from utils import is_ipv4, is_ipv6, valid_hostnames
 
 
 class HostsEntry(object):
@@ -53,6 +53,26 @@ class HostsEntry(object):
         else:
             return False
 
+    @staticmethod
+    def str_to_hostentry(entry):
+        if isinstance(entry, str):
+            line_parts = entry.strip().split()
+            if line_parts[0][0] == '#':
+                return HostsEntry(entry_type='comment', comment=line_parts[0])
+            elif is_ipv4(line_parts[0]):
+                if valid_hostnames(line_parts[1:]):
+                    return HostsEntry(entry_type='ipv4', address=line_parts[0], names=line_parts[1:])
+                else:
+                    return False
+            elif is_ipv6(line_parts[0]):
+                if valid_hostnames(line_parts[1:]):
+                    return HostsEntry(entry_type='ipv6', address=line_parts[0], names=line_parts[1:])
+                else:
+                    print("ipv6 address detected but invalid hostnames detected")
+                    return False
+            else:
+                print("que?")
+                return False
 
 class Hosts(object):
     """ A hosts file. """
@@ -113,20 +133,22 @@ class Hosts(object):
         :param force: Remove conflicting, existing instances first
         :return: True if successfully added to hosts file
         """
-        new_entry = entry
-        if new_entry.entry_type == "comment":
-            existing = self.count(new_entry).get('comment_matches')
+
+        if isinstance(entry, str):
+            entry = HostsEntry.str_to_hostentry(entry)
+        if entry.entry_type == "comment":
+            existing = self.count(entry).get('comment_matches')
             if existing and int(existing) >= 1:
                 return False
-        if new_entry.entry_type == "ipv4" or new_entry.entry_type == "ipv6":
-            existing = self.count(new_entry)
+        if entry.entry_type == "ipv4" or entry.entry_type == "ipv6":
+            existing = self.count(entry)
             existing_addresses = existing.get('address_matches')
             existing_names = existing.get('name_matches')
             if not force and (existing_addresses or existing_names):
                 return False
             elif force:
-                self.remove(new_entry)
-        self.entries.append(new_entry)
+                self.remove(entry)
+        self.entries.append(entry)
         self.write()
         return True
 
@@ -137,9 +159,13 @@ class Hosts(object):
         :param entry: An instance of HostsEntry
         :return: A dict listing the number of address, name and comment matches
         """
+        if isinstance(entry, str):
+            entry = HostsEntry.str_to_hostentry(entry)
+
         num_address_matches = 0
         num_name_matches = 0
         num_comment_matches = 0
+
         for host in self.entries:
             existing_names = host.names
             existing_host_address = host.address

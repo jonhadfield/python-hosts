@@ -18,7 +18,7 @@ def is_ipv6(entry):
     except socket.error:
         return False
 
-def are_valid_hostnames(hostname_list):
+def valid_hostnames(hostname_list):
     """ Checks if all provided hostnames are valid. """
     for entry in hostname_list:
         if len(entry) > 255:
@@ -27,3 +27,6 @@ def are_valid_hostnames(hostname_list):
         if not all(allowed.match(x) for x in entry.split(".")):
             return False
     return True
+
+
+

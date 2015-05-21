@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import sys
 from os import path
-sys.path.insert(0, path.abspath(path.join(path.dirname( __file__ ), '..', 'hosts')))
-from utils import is_ipv4, is_ipv6, are_valid_hostnames
+sys.path.insert(0, path.abspath(path.join(path.dirname(__file__), '..', 'hosts')))
+from utils import is_ipv4, is_ipv6, valid_hostnames
 import exception
 
 def test_ipv4_validation_success():
@@ -33,18 +33,18 @@ def test_hostname_validation_success():
     """
     Test function returns True if valid hostnames are specified
     """
-    assert are_valid_hostnames(['example.com', 'example'])
+    assert valid_hostnames(['example.com', 'example'])
 
 def test_hostname_validation_failure_too_long():
     """
     Test function returns False if a hostname over 255 chars is specified
     """
     long_hostname = 'x' * 256
-    assert not are_valid_hostnames(['example.com', long_hostname])
+    assert not valid_hostnames(['example.com', long_hostname])
 
 def test_hostname_validation_failure_with_leading_hyphen():
     """
     Test function returns False if a hostname with a leading hyphen is specified
     """
-    assert not are_valid_hostnames(['example.com', '-example'])
+    assert not valid_hostnames(['example.com', '-example'])
 
