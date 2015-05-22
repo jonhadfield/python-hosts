@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import socket
 import re
+import os
 
 def is_ipv4(entry):
     """ Checks if a string is a valid ipv4 address. """
@@ -28,5 +29,12 @@ def valid_hostnames(hostname_list):
             return False
     return True
 
+def is_readable(path=None):
+    if os.path.isfile(path) and os.access(path, os.R_OK):
+        return True
+
+def is_writeable(path=None):
+    if os.path.isfile(path) and os.access(path, os.W_OK):
+        return True
 
 

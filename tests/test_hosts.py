@@ -122,12 +122,12 @@ def test_remove_single_comment(tmpdir):
     hosts_file.write(comment1)
     hosts_entries = Hosts(path=hosts_file.strpath)
     new_entry = HostsEntry(entry_type='comment', comment=comment2)
-    hosts_entries.add(new_entry)
-    assert hosts_entries.count(new_entry).get('comment_matches') == 1
-    hosts_entries.remove(new_entry)
-    assert hosts_entries.count(new_entry).get('comment_matches') == 0
+    hosts_entries.add(entry=new_entry)
+    assert hosts_entries.count(entry=new_entry).get('comment_matches') == 1
+    hosts_entries.remove(entry=new_entry)
+    assert hosts_entries.count(entry=new_entry).get('comment_matches') == 0
 
-def test_remove_existing_ipv4_address(tmpdir):
+def test_remove_existing_ipv4_address_using_hostsentry(tmpdir):
     """
     Test removal of an existing ip4 address
     """
@@ -138,6 +138,19 @@ def test_remove_existing_ipv4_address(tmpdir):
     entry = HostsEntry(entry_type='ipv4', address='1.2.3.4', names=['example.com'])
     assert hosts_entries.count(entry).get('address_matches') == 1
     hosts_entries.remove(entry)
+    assert hosts_entries.count(entry).get('address_matches') == 0
+
+def test_remove_existing_ipv4_address_using_strings(tmpdir):
+    """
+    Test removal of an existing ip4 address
+    """
+    ipv4_line = '1.2.3.4 example.com example'
+    hosts_file = tmpdir.mkdir("etc").join("hosts")
+    hosts_file.write(ipv4_line)
+    hosts_entries = Hosts(path=hosts_file.strpath)
+    entry = HostsEntry(entry_type='ipv4', address='1.2.3.4', names=['example.com'])
+    assert hosts_entries.count(entry).get('address_matches') == 1
+    hosts_entries.remove(address='1.2.3.4', names='example.com')
     assert hosts_entries.count(entry).get('address_matches') == 0
 
 def test_hostsentry_initialisation_failure_with_invalid_type():
@@ -220,4 +233,73 @@ def test_default_platform_detection():
 def test_read_hosts_with_platform_detection():
     test_hosts = Hosts()
     assert isinstance(test_hosts, Hosts)
+
+def test_file_import_fails_when_not_readable(tmpdir):
+    """
+    Test import fails if file to import is not readable
+    """
+    hosts_file = tmpdir.mkdir("etc").join("hosts")
+    hosts_file.write("82.132.132.132\texample.com\texample")
+    hosts_entries = Hosts(path=hosts_file.strpath)
+    result = hosts_entries.import_file('/invalid_file')
+    assert result.get('result') == 'failed'
+
+def test_file_import_fails_target_not_writeable(tmpdir):
+    """
+    Test import fails if file to import is not readable
+    """
+    hosts_file = "/etc/hosts"
+    import_file = tmpdir.mkdir("input").join("infile")
+    import_file.write("\n10.10.10.10\thello.com")
+    hosts_entries = Hosts(path=hosts_file)
+    feedback = hosts_entries.import_file(import_file.strpath)
+    assert feedback.get('result') == 'failed'
+
+def test_import_file_continues_on_empty_line(tmpdir):
+    """
+    Test an entry after an empty line is added successfully
+    """
+    hosts_file = tmpdir.mkdir("etc").join("hosts")
+    hosts_file.write("82.132.132.132\texample.com\texample\n")
+    import_file = tmpdir.mkdir("input").join("infile")
+    import_file.write("\n10.10.10.10\thello.com")
+    hosts_entries = Hosts(path=hosts_file.strpath)
+    feedback = hosts_entries.import_file(import_file.strpath)
+    assert feedback.get('result') == 'success'
+
+def test_import_file_returns_unchanged_correctly(tmpdir):
+    """
+    Test that adding an entry that exists will return an unchanged number
+    """
+    hosts_file = tmpdir.mkdir("etc").join("hosts")
+    hosts_file.write("82.132.132.132\texample.com\texample\n")
+    import_file = tmpdir.mkdir("input").join("infile")
+    import_file.write("example\n\n10.10.10.10\thello.com\n82.132.132.132\texample.com\texample\n")
+    hosts_entries = Hosts(path=hosts_file.strpath)
+    feedback = hosts_entries.import_file(import_file.strpath)
+    assert '1 skips' in feedback.get('message')
+
+def test_import_file_increments_failure_counter(tmpdir):
+    """
+    Test that the addition an invalid entry will reflect in failures count
+    """
+    hosts_file = tmpdir.mkdir("etc").join("hosts")
+    hosts_file.write("82.132.132.132\texample.com\texample\n")
+    import_file = tmpdir.mkdir("input").join("infile")
+    import_file.write("example\n\n10.10.10.10\thello.com\n82.132.132.132\texample.com\texample\n")
+    hosts_entries = Hosts(path=hosts_file.strpath)
+    feedback = hosts_entries.import_file(import_file.strpath)
+    assert '1 failures' in feedback.get('message')
+
+def test_import_returns_failure_if_no_successes(tmpdir):
+    """
+    Test that a failure is returned if no entries can be imported
+    """
+    hosts_file = tmpdir.mkdir("etc").join("hosts")
+    hosts_file.write("82.132.132.132\texample.com\texample\n")
+    import_file = tmpdir.mkdir("input").join("infile")
+    import_file.write("hello mum")
+    hosts_entries = Hosts(path=hosts_file.strpath)
+    feedback = hosts_entries.import_file(import_file.strpath)
+    assert 'failed' in feedback.get('result')
 

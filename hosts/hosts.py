@@ -2,7 +2,7 @@
 """ This module contains the classes required to manage a hosts file """
 import sys
 import exception
-from utils import is_ipv4, is_ipv6, valid_hostnames
+from utils import is_ipv4, is_ipv6, valid_hostnames, is_readable, is_writeable
 
 
 class HostsEntry(object):
@@ -35,43 +35,38 @@ class HostsEntry(object):
         self.names = names
 
     @staticmethod
-    def get_entry_type(hosts_entry):
+    def get_entry_type(hosts_entry=None):
         """
         Return the type of entry for the line of hosts file passed
         :param hosts_entry: A line from the hosts file
         :return: comment | blank | ipv4 | ipv6
         """
-        if hosts_entry[0] == "#":
-            return 'comment'
-        if hosts_entry[0] == "\n":
-            return 'blank'
-        entry_chunks = hosts_entry.split()
-        if is_ipv4(entry_chunks[0]):
-            return "ipv4"
-        if is_ipv6(entry_chunks[0]):
-            return "ipv6"
-        else:
-            return False
+        if hosts_entry and isinstance(hosts_entry, str):
+            entry = hosts_entry.strip()
+            if not entry or entry[0] == "\n":
+                return 'blank'
+            if entry[0] == "#":
+                return 'comment'
+            entry_chunks = entry.split()
+            if is_ipv4(entry_chunks[0]):
+                return "ipv4"
+            if is_ipv6(entry_chunks[0]):
+                return "ipv6"
+        return False
 
     @staticmethod
     def str_to_hostentry(entry):
         if isinstance(entry, str):
             line_parts = entry.strip().split()
-            if line_parts[0][0] == '#':
-                return HostsEntry(entry_type='comment', comment=line_parts[0])
+            if entry.startswith('#'):
+                return HostsEntry(entry_type='comment', comment=entry)
             elif is_ipv4(line_parts[0]):
                 if valid_hostnames(line_parts[1:]):
                     return HostsEntry(entry_type='ipv4', address=line_parts[0], names=line_parts[1:])
-                else:
-                    return False
             elif is_ipv6(line_parts[0]):
                 if valid_hostnames(line_parts[1:]):
                     return HostsEntry(entry_type='ipv6', address=line_parts[0], names=line_parts[1:])
-                else:
-                    print("ipv6 address detected but invalid hostnames detected")
-                    return False
             else:
-                print("que?")
                 return False
 
 class Hosts(object):
@@ -107,50 +102,101 @@ class Hosts(object):
         """
         Write the list of host entries back to the hosts file.
         """
-        with open(self.hosts_path, 'w') as hosts_file:
-            for line in self.entries:
-                if line.entry_type == 'comment':
-                    hosts_file.write(line.comment)
-                if line.entry_type == 'blank':
-                    hosts_file.write("\n")
-                if line.entry_type == 'ipv4':
-                    hosts_file.write(
-                        "{0}\t{1}\n".format(
-                            line.address,
-                            ' '.join(line.names),
-                        )
-                    )
-                if line.entry_type == 'ipv6':
-                    hosts_file.write(
-                        "{0}\t{1}\n".format(
-                            line.address,
-                            ' '.join(line.names),))
+        if is_writeable(self.hosts_path):
+            with open(self.hosts_path, 'w') as hosts_file:
+                for line in self.entries:
+                    if line.entry_type == 'comment':
+                        hosts_file.write(line.comment)
+                    if line.entry_type == 'blank':
+                        hosts_file.write("\n")
+                    if line.entry_type == 'ipv4':
+                        hosts_file.write(
+                            "{0}\t{1}\n".format(
+                                line.address,
+                                ' '.join(line.names),
+                                )
+                            )
+                    if line.entry_type == 'ipv6':
+                        hosts_file.write(
+                            "{0}\t{1}\n".format(
+                                line.address,
+                                ' '.join(line.names),))
+
+    def import_file(self, path, force=False):
+        if is_readable(path):
+            failures = 0
+            successes = 0
+            skips = 0
+            with open(path, 'r') as infile:
+                lines = infile.readlines()
+                for line in lines:
+                    print line
+                    if not line.strip():
+                        continue
+                    result = self.add(
+                        entry=line,
+                        force=force).get('result')
+                    print "line: {}".format(line)
+                    print "result: {}".format(result)
+                    if result == 'failed':
+                        failures += 1
+                    elif result == 'success':
+                        successes += 1
+                    elif result == 'unchanged':
+                        skips += 1
+                if successes > 0:
+                    return {'result': 'success',
+                            'message': 'Successfully added {0} entries with {1} failures and {2} skips.'.format(successes, failures, skips)}
+                else:
+                    return {'result': 'failed',
+                            'message': '{0} failures and {1} skips.'.format(failures, skips)}
+        else:
+            return {'result': 'failed',
+                    'message': 'Cannot read: file {0}.'.format(path)}
 
     def add(self, entry=None, force=False):
         """
         Adds an entry to a host file.
-        :param entry: An instance of HostsEntry
+        :param entry: A list, string or instance of HostsEntry
+                      to add to the hosts file
         :param force: Remove conflicting, existing instances first
         :return: True if successfully added to hosts file
         """
 
+        new_entry = None
+        print entry
         if isinstance(entry, str):
-            entry = HostsEntry.str_to_hostentry(entry)
-        if entry.entry_type == "comment":
-            existing = self.count(entry).get('comment_matches')
+            new_entry = HostsEntry.str_to_hostentry(entry)
+        elif isinstance(entry, HostsEntry):
+            new_entry = entry
+
+        if not new_entry:
+            return {'result': 'failed', 'message': 'Cannot add entry. \
+                    Not recognised as a valid comment, \
+                    ipv4 address or ipv6 address.'}
+
+        replaced = False
+        if new_entry.entry_type == "comment":
+            existing = self.count(new_entry).get('comment_matches')
             if existing and int(existing) >= 1:
-                return False
-        if entry.entry_type == "ipv4" or entry.entry_type == "ipv6":
-            existing = self.count(entry)
+                return {'result': 'unchanged', 'message': 'Cannot add entry. Comment already exists.'}
+        if new_entry.entry_type == "ipv4" or new_entry.entry_type == "ipv6":
+            print "type = {0} address = {1} names = {2}".format(new_entry.entry_type, new_entry.address, new_entry.names)
+            existing = self.count(new_entry)
+            print "existing {0}".format(existing)
             existing_addresses = existing.get('address_matches')
             existing_names = existing.get('name_matches')
-            if not force and (existing_addresses or existing_names):
-                return False
-            elif force:
-                self.remove(entry)
-        self.entries.append(entry)
+            if not force and any((existing_addresses, existing_names)):
+                return {'result': 'unchanged', 'message': 'Matching entries exist. Use -f to remove existing entries.'}
+            elif force and any((existing_addresses, existing_names)):
+                self.remove(entry=new_entry)
+                replaced = True
+        self.entries.append(new_entry)
         self.write()
-        return True
+        if replaced:
+            return {'result': 'success', 'message': 'Entry replaced.'}
+        else:
+            return {'result': 'success', 'message': 'Entry added.'}
 
     def count(self, entry=None):
         """
@@ -184,7 +230,7 @@ class Hosts(object):
                 'name_matches': num_name_matches,
                 'comment_matches': num_comment_matches}
 
-    def remove(self, entry=None):
+    def remove(self, entry=None, address=None, names=None, comment=None):
         """
         Remove an entry from a hosts file
         :param entry: An instance of HostsEntry
@@ -192,24 +238,36 @@ class Hosts(object):
         """
         removed = 0
         removal_list = []
+        ''' if an instance of HostsEntry is supplied '''
+        if isinstance(entry, HostsEntry):
+            entry_names = entry.names
+            entry_address = entry.address
+            entry_comment = entry.comment
+        else:
+            entry_names = names
+            entry_address = address
+            entry_comment = comment
+
         for existing_entry in self.entries:
-            if entry:
-                if existing_entry.names and entry.names:
+            if existing_entry.entry_type in ['ipv4', 'ipv6']:
+                names_inter = None
+                if entry_names:
                     names_inter = set(
-                        existing_entry.names).intersection(entry.names)
-                    if any((existing_entry.address == entry.address,
-                            existing_entry.names == entry.names,
-                            names_inter)):
-                        removal_list.append(existing_entry)
-                        removed += 1
-                if entry.comment and existing_entry.comment == entry.comment:
+                        existing_entry.names).intersection(entry_names)
+                if any((existing_entry.address == entry_address,
+                        existing_entry.names == entry_names,
+                        names_inter)):
+                    removal_list.append(existing_entry)
+                    removed += 1
+            if entry_comment and entry_comment == existing_entry.comment:
                     removal_list.append(existing_entry)
         for entry_to_remove in removal_list:
             self.entries.remove(entry_to_remove)
-        self.write()
+            self.write()
         if removed > 0:
-            return True
-        return False
+            return {'result': 'success',
+                    'message': 'Removed {0} entries..'.format(removed)}
+        return {'result': 'failure', 'message': 'Did not find matching entry.'}
 
     def populate_entries(self):
         """
@@ -228,8 +286,10 @@ class Hosts(object):
                         self.entries.append(HostsEntry(entry_type="blank"))
                     if entry_type == "ipv4" or entry_type == "ipv6":
                         chunked_entry = hosts_entry.split()
-                        self.entries.append(HostsEntry(entry_type=entry_type,
-                                                       address=chunked_entry[0],
-                                                       names=chunked_entry[1:]))
+                        self.entries.append(
+                            HostsEntry(
+                                entry_type=entry_type,
+                                address=chunked_entry[0],
+                                names=chunked_entry[1:]))
         except IOError:
             raise
