@@ -69,6 +69,7 @@ class HostsEntry(object):
             else:
                 return False
 
+
 class Hosts(object):
     """ A hosts file. """
     def __init__(self, path=None):
@@ -146,7 +147,8 @@ class Hosts(object):
                         skips += 1
                 if successes > 0:
                     return {'result': 'success',
-                            'message': 'Successfully added {0} entries with {1} failures and {2} skips.'.format(successes, failures, skips)}
+                            'message': 'Successfully added {0} \
+                            entries with {1} failures and {2} skips.'.format(successes, failures, skips)}
                 else:
                     return {'result': 'failed',
                             'message': '{0} failures and {1} skips.'.format(failures, skips)}
@@ -181,7 +183,9 @@ class Hosts(object):
             if existing and int(existing) >= 1:
                 return {'result': 'unchanged', 'message': 'Cannot add entry. Comment already exists.'}
         if new_entry.entry_type == "ipv4" or new_entry.entry_type == "ipv6":
-            print "type = {0} address = {1} names = {2}".format(new_entry.entry_type, new_entry.address, new_entry.names)
+            print "type = {0} address = {1} names = {2}".format(new_entry.entry_type,
+                                                                new_entry.address,
+                                                                new_entry.names)
             existing = self.count(new_entry)
             print "existing {0}".format(existing)
             existing_addresses = existing.get('address_matches')

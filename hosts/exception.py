@@ -15,12 +15,14 @@ class HostsException(Exception):
     """
     pass
 
+
 class HostsEntryException(Exception):
     """
     Base exception class. All HostsEntry-specific exceptions should subclass
     this class.
     """
     pass
+
 
 class InvalidIPv4Address(HostsEntryException):
     """
@@ -34,6 +36,7 @@ class InvalidIPv6Address(HostsEntryException):
     Raised when a HostsEntry is defined as type 'ipv6' but with an invalid address
     """
     pass
+
 
 class InvalidComment(HostsEntryException):
     """

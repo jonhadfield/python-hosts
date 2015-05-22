@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'hosts')))
 import sys
 import pytest
 import os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'hosts')))
 from hosts import Hosts, HostsEntry
 import exception
+
 
 def test_add_single_ipv4_host_by_detection(tmpdir):
     """
@@ -16,6 +17,7 @@ def test_add_single_ipv4_host_by_detection(tmpdir):
     new_entry = '3.4.5.6 bob jane.com'
     hosts.add(entry=new_entry, force=False)
     assert hosts.count(new_entry).get('address_matches') == 1
+
 
 def test_add_single_ipv4_host(tmpdir):
     """
@@ -41,6 +43,7 @@ def test_replacement_of_ipv4_entry_where_address_differs(tmpdir):
     counts = hosts_entries.count(new_entry)
     assert counts.get('address_matches') == 1
 
+
 def test_addition_of_ipv4_entry_where_matching_exists(tmpdir):
     """
     Test replacement of an ipv4 entry where just the address differs
@@ -52,6 +55,7 @@ def test_addition_of_ipv4_entry_where_matching_exists(tmpdir):
     hosts_entries.add(entry=new_entry, force=False)
     counts = hosts_entries.count(new_entry)
     assert counts.get('address_matches') == 1
+
 
 def test_replace_ipv4_host_where_name_differs(tmpdir):
     """
@@ -65,6 +69,7 @@ def test_replace_ipv4_host_where_name_differs(tmpdir):
     counts = hosts_entries.count(new_entry)
     assert counts.get('address_matches') == 1 and counts.get('name_matches') == 1
 
+
 def test_add_single_ipv6_host(tmpdir):
     """
     Test addition of an ipv6 entry
@@ -75,6 +80,7 @@ def test_add_single_ipv6_host(tmpdir):
     new_entry = HostsEntry(entry_type='ipv6', address='::1', names=['localhost6.localdomain6', 'localhost6'])
     hosts_entries.add(entry=new_entry, force=False)
     assert hosts_entries.count(new_entry).get('address_matches') == 1
+
 
 def test_add_single_comment(tmpdir):
     """
@@ -88,6 +94,7 @@ def test_add_single_comment(tmpdir):
     hosts_entries.add(entry=new_entry, force=False, )
     assert hosts_entries.count(entry=new_entry).get('comment_matches') == 1
 
+
 def test_add_a_comment_that_already_exists(tmpdir):
     """
     Test addition of a comment
@@ -100,6 +107,7 @@ def test_add_a_comment_that_already_exists(tmpdir):
     hosts_entries.add(entry=new_entry, force=False)
     assert hosts_entries.count(entry=new_entry).get('comment_matches') == 1
 
+
 def test_add_empty_line(tmpdir):
     """
     Test addition of an empty line (blank)
@@ -111,6 +119,7 @@ def test_add_empty_line(tmpdir):
     new_entry = HostsEntry(entry_type='comment', comment=comment)
     hosts_entries.add(entry=new_entry, force=False, )
     assert hosts_entries.count(entry=new_entry).get('comment_matches') == 1
+
 
 def test_remove_single_comment(tmpdir):
     """
@@ -127,6 +136,7 @@ def test_remove_single_comment(tmpdir):
     hosts_entries.remove(entry=new_entry)
     assert hosts_entries.count(entry=new_entry).get('comment_matches') == 0
 
+
 def test_remove_existing_ipv4_address_using_hostsentry(tmpdir):
     """
     Test removal of an existing ip4 address
@@ -139,6 +149,7 @@ def test_remove_existing_ipv4_address_using_hostsentry(tmpdir):
     assert hosts_entries.count(entry).get('address_matches') == 1
     hosts_entries.remove(entry)
     assert hosts_entries.count(entry).get('address_matches') == 0
+
 
 def test_remove_existing_ipv4_address_using_strings(tmpdir):
     """
@@ -153,6 +164,7 @@ def test_remove_existing_ipv4_address_using_strings(tmpdir):
     hosts_entries.remove(address='1.2.3.4', names='example.com')
     assert hosts_entries.count(entry).get('address_matches') == 0
 
+
 def test_hostsentry_initialisation_failure_with_invalid_type():
     """
     Test initialiser returns an exception if the type is invalid 
@@ -164,6 +176,7 @@ def test_hostsentry_initialisation_failure_with_invalid_type():
     with pytest.raises(Exception):
         HostsEntry('IP')
 
+
 def test_hostsentry_initialisation_failure_with_missing_comment():
     """
     Test initialiser returns an exception if comment type
@@ -173,6 +186,7 @@ def test_hostsentry_initialisation_failure_with_missing_comment():
         HostsEntry(entry_type='comment')
     with pytest.raises(Exception):
         HostsEntry(entry_type='comment', address='1.2.3.4')
+
 
 def test_hostsentry_initialisation_failure_with_missing_name_or_address():
     """
@@ -190,6 +204,7 @@ def test_hostsentry_initialisation_failure_with_missing_name_or_address():
     with pytest.raises(Exception):
         HostsEntry(entry_type='ipv6', names=['example.com'])
 
+
 def test_hostsentry_initialisation_failure_with_invalid_address():
     """
     Test initialiser returns an exception if type is ipv4|ipv6
@@ -200,9 +215,11 @@ def test_hostsentry_initialisation_failure_with_invalid_address():
     with pytest.raises(exception.InvalidIPv6Address):
         HostsEntry(entry_type='ipv6', address='2001::1::3F', names=['example.com', 'example'])
 
+
 def test_io_exception_if_hosts_path_does_not_exist():
     with pytest.raises(IOError):
         Hosts(path="invalid")
+
 
 def test_line_break_identified_as_blank(tmpdir):
     new_line = "\n"
@@ -211,6 +228,7 @@ def test_line_break_identified_as_blank(tmpdir):
     hosts_entries = Hosts(path=hosts_file.strpath)
     assert hosts_entries.entries[0].entry_type == 'blank'
 
+
 def test_get_entry_type():
     assert HostsEntry.get_entry_type('# This is a comment') == 'comment'
     assert HostsEntry.get_entry_type('\n') == 'blank'
@@ -218,21 +236,27 @@ def test_get_entry_type():
     assert HostsEntry.get_entry_type('2001:0db8:85a3:0042:1000:8a2e:0370:7334 example.com example') == 'ipv6'
     assert not HostsEntry.get_entry_type('example.com example 1.2.3.4')
 
-def test_windows_platform_detection(): 
+
+def test_windows_platform_detection():
     assert Hosts.determine_hosts_path(platform='windows') == r'c:\windows\system32\drivers\etc\hosts'
 
-def test_osx_platform_detection(): 
+
+def test_osx_platform_detection():
     assert Hosts.determine_hosts_path(platform='darwin') == '/etc/hosts'
 
-def test_linux_platform_detection(): 
+
+def test_linux_platform_detection():
     assert Hosts.determine_hosts_path(platform='linux') == '/etc/hosts'
 
-def test_default_platform_detection(): 
+
+def test_default_platform_detection():
     assert Hosts.determine_hosts_path() == '/etc/hosts'
+
 
 def test_read_hosts_with_platform_detection():
     test_hosts = Hosts()
     assert isinstance(test_hosts, Hosts)
+
 
 def test_file_import_fails_when_not_readable(tmpdir):
     """
@@ -244,6 +268,7 @@ def test_file_import_fails_when_not_readable(tmpdir):
     result = hosts_entries.import_file('/invalid_file')
     assert result.get('result') == 'failed'
 
+
 def test_file_import_fails_target_not_writeable(tmpdir):
     """
     Test import fails if file to import is not readable
@@ -254,6 +279,7 @@ def test_file_import_fails_target_not_writeable(tmpdir):
     hosts_entries = Hosts(path=hosts_file)
     feedback = hosts_entries.import_file(import_file.strpath)
     assert feedback.get('result') == 'failed'
+
 
 def test_import_file_continues_on_empty_line(tmpdir):
     """
@@ -267,6 +293,7 @@ def test_import_file_continues_on_empty_line(tmpdir):
     feedback = hosts_entries.import_file(import_file.strpath)
     assert feedback.get('result') == 'success'
 
+
 def test_import_file_returns_unchanged_correctly(tmpdir):
     """
     Test that adding an entry that exists will return an unchanged number
@@ -278,6 +305,7 @@ def test_import_file_returns_unchanged_correctly(tmpdir):
     hosts_entries = Hosts(path=hosts_file.strpath)
     feedback = hosts_entries.import_file(import_file.strpath)
     assert '1 skips' in feedback.get('message')
+
 
 def test_import_file_increments_failure_counter(tmpdir):
     """
@@ -291,6 +319,7 @@ def test_import_file_increments_failure_counter(tmpdir):
     feedback = hosts_entries.import_file(import_file.strpath)
     assert '1 failures' in feedback.get('message')
 
+
 def test_import_returns_failure_if_no_successes(tmpdir):
     """
     Test that a failure is returned if no entries can be imported
@@ -302,4 +331,3 @@ def test_import_returns_failure_if_no_successes(tmpdir):
     hosts_entries = Hosts(path=hosts_file.strpath)
     feedback = hosts_entries.import_file(import_file.strpath)
     assert 'failed' in feedback.get('result')
-

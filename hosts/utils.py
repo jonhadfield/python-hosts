@@ -3,6 +3,7 @@ import socket
 import re
 import os
 
+
 def is_ipv4(entry):
     """ Checks if a string is a valid ipv4 address. """
     try:
@@ -11,6 +12,7 @@ def is_ipv4(entry):
     except socket.error:
         return False
 
+
 def is_ipv6(entry):
     """ Checks if a string is a valid ipv6 address. """
     try:
@@ -18,6 +20,7 @@ def is_ipv6(entry):
             return True
     except socket.error:
         return False
+
 
 def valid_hostnames(hostname_list):
     """ Checks if all provided hostnames are valid. """
@@ -29,12 +32,12 @@ def valid_hostnames(hostname_list):
             return False
     return True
 
+
 def is_readable(path=None):
     if os.path.isfile(path) and os.access(path, os.R_OK):
         return True
 
+
 def is_writeable(path=None):
     if os.path.isfile(path) and os.access(path, os.W_OK):
         return True
-
-
