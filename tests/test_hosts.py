@@ -268,18 +268,6 @@ def test_file_import_fails_when_not_readable(tmpdir):
     assert result.get('result') == 'failed'
 
 
-#def test_file_import_fails_target_not_writeable(tmpdir):
-#    """
-#    Test import fails if file to import is not readable
-#    """
-#    hosts_file = "/etc/hosts"
-#    import_file = tmpdir.mkdir("input").join("infile")
-#    import_file.write("\n10.10.10.10\thello.com")
-#    hosts_entries = Hosts(path=hosts_file)
-#    feedback = hosts_entries.import_file(import_file.strpath)
-#    assert feedback.get('result') == 'failed'
-
-
 def test_import_file_continues_on_empty_line(tmpdir):
     """
     Test an entry after an empty line is added successfully
