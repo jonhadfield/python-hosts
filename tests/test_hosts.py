@@ -3,8 +3,7 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'hosts')))
 import pytest
 import os
-from hosts import Hosts, HostsEntry
-import exception
+from hosts import Hosts, HostsEntry, exception
 
 
 def test_add_single_ipv4_host_by_detection(tmpdir):

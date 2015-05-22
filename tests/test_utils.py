@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 import sys
-from os import path
 sys.path.insert(0, path.abspath(path.join(path.dirname(__file__), '..', 'hosts')))
-from utils import is_ipv4, is_ipv6, valid_hostnames
-import exception
+from os import path
+from hosts.utils import is_ipv4, is_ipv6, valid_hostnames
 
 def test_ipv4_validation_success():
     """
