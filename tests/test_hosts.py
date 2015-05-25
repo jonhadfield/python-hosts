@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import sys
 import os
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'hosts')))
 import pytest
 from hosts import Hosts, HostsEntry, exception
@@ -318,3 +319,49 @@ def test_import_returns_failure_if_no_successes(tmpdir):
     hosts_entries = Hosts(path=hosts_file.strpath)
     feedback = hosts_entries.import_file(import_file.strpath)
     assert 'failed' in feedback.get('result')
+
+
+def test_import_from_url(tmpdir):
+    """
+    Test that a simple import by URL succeeds
+    """
+    hosts_file = tmpdir.mkdir("etc").join("hosts")
+    hosts_file.write("127.0.0.1\tlocalhost\n")
+    hosts = Hosts(path=hosts_file.strpath)
+    import_url = "https://dl.dropboxusercontent.com/u/167103/hosts"
+    hosts.import_url(url=import_url)
+    hosts = Hosts(path=hosts_file.strpath)
+    assert hosts.count('66.66.66.66 example.com example').get('name_matches') == 1
+
+
+def test_import_from_url_counters_for_part_success(tmpdir):
+    """
+    Test that correct 'success, fail, skip' counters are returned
+    when there is at least a single successful imported host entry
+    """
+    hosts_file = tmpdir.mkdir("etc").join("hosts")
+    hosts_file.write("6.6.6.6\texample.com\n")
+    hosts = Hosts(path=hosts_file.strpath)
+    import_url = "https://dl.dropboxusercontent.com/u/167103/hosts"
+    message = hosts.import_url(url=import_url)
+    print message
+    assert 'Successfully added 1' in message.get('message')
+    assert '1 failures' in message.get('message')
+    assert '1 skips' in message.get('message')
+
+
+def test_import_from_url_counters_for_no_successes(tmpdir):
+    """
+    Test that correct 'success, fail, skip' counters are returned
+    when there isn't a single successful imported host entry
+    """
+    hosts_file = tmpdir.mkdir("etc").join("hosts")
+    hosts_file.write("6.6.6.6\texample.com\n")
+    hosts = Hosts(path=hosts_file.strpath)
+    import_url = "https://dl.dropboxusercontent.com/u/167103/hosts_invalid"
+    message = hosts.import_url(url=import_url)
+    print message
+    assert message.get('result') == 'failed'
+    assert 'Successfully' not in message.get('message')
+    assert '2 failures' in message.get('message')
+    assert '1 skips' in message.get('message')
