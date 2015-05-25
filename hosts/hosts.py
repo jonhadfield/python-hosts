@@ -3,7 +3,7 @@
 import sys
 import exception
 from utils import is_ipv4, is_ipv6, valid_hostnames, is_readable, is_writeable
-
+import urllib2
 
 class HostsEntry(object):
     """ An entry in a hosts file. """
@@ -123,6 +123,33 @@ class Hosts(object):
                                 line.address,
                                 ' '.join(line.names),))
 
+    def import_url(self, url=None, force=False):
+        response = urllib2.urlopen(url)
+        file_contents = response.read()
+        lines = file_contents.split('\n')
+        failures = 0
+        successes = 0
+        skips = 0
+        for line in lines:
+            if not line.strip():
+                continue
+            result = self.add(
+                entry=line,
+                force=force).get('result')
+            if result == 'failed':
+                failures += 1
+            elif result == 'success':
+                successes += 1
+            elif result == 'unchanged':
+                skips += 1
+        if successes > 0:
+            return {'result': 'success',
+                    'message': 'Successfully added {0} \
+                    entries with {1} failures and {2} skips.'.format(successes, failures, skips)}
+        else:
+            return {'result': 'failed',
+                    'message': '{0} failures and {1} skips.'.format(failures, skips)}
+
     def import_file(self, path, force=False):
         if is_readable(path):
             failures = 0
@@ -131,14 +158,11 @@ class Hosts(object):
             with open(path, 'r') as infile:
                 lines = infile.readlines()
                 for line in lines:
-                    print line
                     if not line.strip():
                         continue
                     result = self.add(
                         entry=line,
                         force=force).get('result')
-                    print "line: {}".format(line)
-                    print "result: {}".format(result)
                     if result == 'failed':
                         failures += 1
                     elif result == 'success':
@@ -166,7 +190,6 @@ class Hosts(object):
         """
 
         new_entry = None
-        print entry
         if isinstance(entry, str):
             new_entry = HostsEntry.str_to_hostentry(entry)
         elif isinstance(entry, HostsEntry):
@@ -183,11 +206,7 @@ class Hosts(object):
             if existing and int(existing) >= 1:
                 return {'result': 'unchanged', 'message': 'Cannot add entry. Comment already exists.'}
         if new_entry.entry_type == "ipv4" or new_entry.entry_type == "ipv6":
-            print "type = {0} address = {1} names = {2}".format(new_entry.entry_type,
-                                                                new_entry.address,
-                                                                new_entry.names)
             existing = self.count(new_entry)
-            print "existing {0}".format(existing)
             existing_addresses = existing.get('address_matches')
             existing_names = existing.get('name_matches')
             if not force and any((existing_addresses, existing_names)):
