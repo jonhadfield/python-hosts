@@ -344,7 +344,6 @@ def test_import_from_url_counters_for_part_success(tmpdir):
     hosts = Hosts(path=hosts_file.strpath)
     import_url = "https://dl.dropboxusercontent.com/u/167103/hosts"
     message = hosts.import_url(url=import_url)
-    print message
     assert 'Successfully added 1' in message.get('message')
     assert '1 failures' in message.get('message')
     assert '1 skips' in message.get('message')
@@ -360,8 +359,21 @@ def test_import_from_url_counters_for_no_successes(tmpdir):
     hosts = Hosts(path=hosts_file.strpath)
     import_url = "https://dl.dropboxusercontent.com/u/167103/hosts_invalid"
     message = hosts.import_url(url=import_url)
-    print message
     assert message.get('result') == 'failed'
     assert 'Successfully' not in message.get('message')
     assert '2 failures' in message.get('message')
+    assert '1 skips' in message.get('message')
+
+def test_import_from_url(tmpdir):
+    """
+    Test that correct 'success, fail, skip' counters are returned
+    when there is at least a single successful imported host entry
+    """
+    hosts_file = tmpdir.mkdir("etc").join("hosts")
+    hosts_file.write("6.6.6.6\texample.com\n")
+    hosts = Hosts(path=hosts_file.strpath)
+    import_url = "https://dl.dropboxusercontent.com/u/167103/hosts_win"
+    message = hosts.import_url(url=import_url)
+    assert 'Successfully added 47' in message.get('message')
+    assert '1 failures' in message.get('message')
     assert '1 skips' in message.get('message')

@@ -126,6 +126,8 @@ class Hosts(object):
     def import_url(self, url=None, force=False):
         response = urllib2.urlopen(url)
         file_contents = response.read()
+        file_contents = file_contents.rstrip().replace('^M', '\n')
+        file_contents = file_contents.rstrip().replace('\r\n', '\n')
         lines = file_contents.split('\n')
         failures = 0
         successes = 0
@@ -188,7 +190,7 @@ class Hosts(object):
         :param force: Remove conflicting, existing instances first
         :return: True if successfully added to hosts file
         """
-
+        # TODO: Clean this up
         new_entry = None
         if isinstance(entry, str):
             new_entry = HostsEntry.str_to_hostentry(entry)
@@ -197,19 +199,26 @@ class Hosts(object):
 
         if not new_entry:
             return {'result': 'failed', 'message': 'Cannot add entry. \
-                    Not recognised as a valid comment, \
-                    ipv4 address or ipv6 address.'}
+                     Not recognised as a valid comment, \
+                     ipv4 address or ipv6 address.'}
 
         replaced = False
         if new_entry.entry_type == "comment":
             existing = self.count(new_entry).get('comment_matches')
             if existing and int(existing) >= 1:
                 return {'result': 'unchanged', 'message': 'Cannot add entry. Comment already exists.'}
+            else:
+                # TODO: Why do I need to add a new line?
+                new_entry.comment += '\n'
         if new_entry.entry_type == "ipv4" or new_entry.entry_type == "ipv6":
             existing = self.count(new_entry)
             existing_addresses = existing.get('address_matches')
             existing_names = existing.get('name_matches')
-            if not force and any((existing_addresses, existing_names)):
+
+            if new_entry.address in ('0.0.0.0', '127.0.0.1'):
+                if all((existing_addresses, existing_names)):
+                    return {'result': 'unchanged', 'message': 'Matching entries exist'}
+            elif not force and any((existing_addresses, existing_names)):
                 return {'result': 'unchanged', 'message': 'Matching entries exist. Use -f to remove existing entries.'}
             elif force and any((existing_addresses, existing_names)):
                 self.remove(entry=new_entry)
