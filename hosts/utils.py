@@ -39,5 +39,6 @@ def is_readable(path=None):
 
 
 def is_writeable(path=None):
+    print path
     if os.path.isfile(path) and os.access(path, os.W_OK):
         return True

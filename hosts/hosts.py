@@ -18,7 +18,10 @@ class Timer:
 
 class HostsEntry(object):
     """ An entry in a hosts file. """
+    __slots__ = ['entry_type', 'address', 'comment', 'names']
+
     def __init__(self, entry_type=None, address=None, comment=None, names=None):
+        #with Timer() as t:
         if not entry_type or entry_type not in ('ipv4',
                                                 'ipv6',
                                                 'comment',
@@ -44,6 +47,7 @@ class HostsEntry(object):
         self.address = address
         self.comment = comment
         self.names = names
+        #print('HostsEntry took %.03f sec.' % t.interval)
 
     @staticmethod
     def get_entry_type(hosts_entry=None):
@@ -52,6 +56,7 @@ class HostsEntry(object):
         :param hosts_entry: A line from the hosts file
         :return: comment | blank | ipv4 | ipv6
         """
+        #with Timer() as t:
         if hosts_entry and isinstance(hosts_entry, str):
             entry = hosts_entry.strip()
             if not entry or entry[0] == "\n":
@@ -63,10 +68,12 @@ class HostsEntry(object):
                 return "ipv4"
             if is_ipv6(entry_chunks[0]):
                 return "ipv6"
+        #print('get_entry_type took %.03f sec.' % t.interval)
         return False
 
     @staticmethod
     def str_to_hostentry(entry):
+        #with Timer() as t:
         if isinstance(entry, str):
             line_parts = entry.strip().split()
             if is_ipv4(line_parts[0]):
@@ -77,10 +84,12 @@ class HostsEntry(object):
                     return HostsEntry(entry_type='ipv6', address=line_parts[0], names=line_parts[1:])
             else:
                 return None
-
+        #print('str_to_hostentry took %.03f sec.' % t.interval)
 
 class Hosts(object):
     """ A hosts file. """
+    __slots__ = ['entries', 'hosts_path']
+
     def __init__(self, path=None):
         """
         Returns a list of all entries in the hosts file.
@@ -108,36 +117,39 @@ class Hosts(object):
         else: 
             return '/etc/hosts'
 
-    def write(self):
+    @staticmethod
+    def write(entry_list=None, hosts_path=None):
         """
         Write the list of host entries back to the hosts file.
         """
-        if is_writeable(self.hosts_path):
-            with open(self.hosts_path, 'w') as hosts_file:
-                for line in self.entries:
-                    if line.entry_type == 'comment':
-                        hosts_file.write(line.comment)
-                    if line.entry_type == 'blank':
-                        hosts_file.write("\n")
-                    if line.entry_type == 'ipv4':
-                        hosts_file.write(
-                            "{0}\t{1}\n".format(
-                                line.address,
-                                ' '.join(line.names),
+        with Timer() as t:
+            if is_writeable(hosts_path):
+                with open(hosts_path, 'w') as hosts_file:
+                    for line in entry_list:
+                        if line.entry_type == 'comment':
+                            hosts_file.write(line.comment)
+                        if line.entry_type == 'blank':
+                            hosts_file.write("\n")
+                        if line.entry_type == 'ipv4':
+                            hosts_file.write(
+                                "{0}\t{1}\n".format(
+                                    line.address,
+                                    ' '.join(line.names),
+                                    )
                                 )
-                            )
-                    if line.entry_type == 'ipv6':
-                        hosts_file.write(
-                            "{0}\t{1}\n".format(
-                                line.address,
-                                ' '.join(line.names),))
+                        if line.entry_type == 'ipv6':
+                            hosts_file.write(
+                                "{0}\t{1}\n".format(
+                                    line.address,
+                                    ' '.join(line.names),))
+        print('write took %.03f sec.' % t.interval)
 
     @staticmethod
     def get_hosts_by_url(url=None):
         response = urllib2.urlopen(url)
         return response.read()
 
-    def import_url(self, url=None, force=False):
+    def import_url(self, url=None, force=False, hosts_path=None):
         file_contents = self.get_hosts_by_url(url=url)
         file_contents = file_contents.rstrip().replace('^M', '\n')
         file_contents = file_contents.rstrip().replace('\r\n', '\n')
@@ -148,7 +160,7 @@ class Hosts(object):
                 continue
             else:
                 new_entries.append(line)
-        return self.add(entry=new_entries, force=force)
+        return self.add(entry=new_entries, force=force, hosts_path=hosts_path)
 
     def import_file(self, import_file_path=None, force=False):
         if is_readable(import_file_path):
@@ -163,7 +175,7 @@ class Hosts(object):
             return {'result': 'failed',
                     'message': 'Cannot read: file {0}.'.format(import_file_path)}
 
-    def add(self, entry=None, force=False):
+    def add(self, entry=None, force=False, entry_list=None, hosts_path=None):
         """
         Adds an entry to a host file.
         :param entry: A list, string or instance of HostsEntry
@@ -205,31 +217,49 @@ class Hosts(object):
                      ipv4 address or ipv6 address.'}
 
         # LOOP THROUGH AND ADD THE NEW ENTRIES
-        print "No. new entries: {}".format(len(new_entries))
+        print "Looping through: {} entries".format(len(new_entries))
+        mycount = 0
+        local_entries = self.entries
         for new_entry in new_entries:
-            existing = self.count(new_entry)
+            mycount += 1
+            #with Timer() as t:
+            #with Timer() as d:
+            existing = self.count(entry=new_entry, entry_list=local_entries)
+            #print('Finished initial count %.03f sec.' % d.interval)
             existing_addresses = existing.get('address_matches')
             existing_names = existing.get('name_matches')
+
             """
             If it looks like we're adding ad blocker entries then
             only add if same address and matching names don't exist
             """
             if new_entry.address in ('0.0.0.0', '127.0.0.1'):
+                # with Timer() as z:
                 if all((existing_addresses, existing_names)):
                     unchanged_count += 1
                 else:
-                    self.entries.append(new_entry)
+                    local_entries.append(new_entry)
+                    #self.entries = map(new_entry, self.entries)
                     added_count += 1
+                # print('Finished %.03f sec.' % z.interval)
             elif not force and any((existing_addresses, existing_names)):
+                print "NOT FORCE AND ANY (addr/name)"
                 unchanged_count += 1
             elif not force and not any((existing_addresses, existing_names)):
-                self.entries.append(new_entry)
+                print "NOT FORCE AND NOT AN (addr/name)"
+                #with Timer() as y:
+                local_entries.append(new_entry)
                 added_count += 1
+                #print('Finished %.03f sec.' % y.interval)
             elif force and any((existing_addresses, existing_names)):
-                self.remove(entry=new_entry, batch=True)
-                self.entries.append(new_entry)
+                print "FORCING"
+                entry_list = Hosts.remove(entry=new_entry, entry_list=entry_list, batch=True)
+                local_entries.append(new_entry)
                 replaced_count += 1
-        self.write()
+            #print('loop took %.03f sec.' % t.interval)
+        #self.entries = local_entries
+        print "Finished looping through {} entries.".format(mycount)
+        Hosts.write(entry_list=local_entries, hosts_path=hosts_path)
         if any((added_count, replaced_count)):
             result_status = 'success'
         else:
@@ -240,7 +270,8 @@ class Hosts(object):
                                                                                         unchanged_count,
                                                                                         failed_count)}
 
-    def count(self, entry=None):
+    @staticmethod
+    def count(entry=None, entry_list=None):
         """
         Count the number of address, name or comment matches
         in the given HostsEntry instance or supplied values
@@ -253,28 +284,29 @@ class Hosts(object):
         num_address_matches = 0
         num_name_matches = 0
         num_comment_matches = 0
+        for host in entry_list:
+            existing_names = host.names
+            existing_host_address = host.address
+            existing_comment = host.comment
+            if entry.entry_type == "ipv4" or entry.entry_type == "ipv6":
+                #with Timer() as f:
+                if all((existing_names, entry.names)) and \
+                        set(entry.names).intersection(existing_names):
+                    num_name_matches += 1
+                if existing_host_address and \
+                        existing_host_address == entry.address:
+                    num_address_matches += 1
+                #print('\tCount took %.03f sec.' % f.interval)
+            if entry.entry_type == "comment":
+                if existing_comment == entry.comment:
+                    num_comment_matches += 1
 
-        for host in self.entries:
-            with Timer() as t:
-                existing_names = host.names
-                existing_host_address = host.address
-                existing_comment = host.comment
-                if entry.entry_type == "ipv4" or entry.entry_type == "ipv6":
-                    if all((existing_names, entry.names)) and \
-                            set(entry.names).intersection(existing_names):
-                        num_name_matches += 1
-                    if existing_host_address and \
-                            existing_host_address == entry.address:
-                        num_address_matches += 1
-                if entry.entry_type == "comment":
-                    if existing_comment == entry.comment:
-                        num_comment_matches += 1
-            print('Request took %.03f sec.' % t.interval)
         return {'address_matches': num_address_matches,
                 'name_matches': num_name_matches,
                 'comment_matches': num_comment_matches}
 
-    def remove(self, entry=None, address=None, names=None, comment=None, batch=False):
+    @staticmethod
+    def remove(entry=None, address=None, names=None, comment=None, batch=False, entry_list=None, hosts_path=None):
         """
         Remove an entry from a hosts file
         :param entry: An instance of HostsEntry
@@ -292,7 +324,7 @@ class Hosts(object):
             entry_address = address
             entry_comment = comment
 
-        for existing_entry in self.entries:
+        for existing_entry in entry_list:
             if existing_entry.entry_type in ['ipv4', 'ipv6']:
                 names_inter = None
                 if entry_names:
@@ -306,13 +338,10 @@ class Hosts(object):
             if entry_comment and entry_comment == existing_entry.comment:
                 removal_list.append(existing_entry)
         for entry_to_remove in removal_list:
-            self.entries.remove(entry_to_remove)
+            entry_list.remove(entry_to_remove)
         if not batch:
-            self.write()
-        if removed > 0:
-            return {'result': 'success',
-                    'message': 'Removed {0} entries..'.format(removed)}
-        return {'result': 'failure', 'message': 'Did not find matching entry.'}
+            Hosts.write(entry_list=entry_list, hosts_path=hosts_path)
+        return entry_list
 
     def populate_entries(self):
         """
@@ -320,21 +349,24 @@ class Hosts(object):
         and store them as HostEntry's in an instance of Hosts.
         """
         try:
+            local_entries = []
             with open(self.hosts_path, 'r') as hosts_file:
                 hosts_entries = [line for line in hosts_file]
                 for hosts_entry in hosts_entries:
                     entry_type = HostsEntry.get_entry_type(hosts_entry)
                     if entry_type == "comment":
-                        self.entries.append(HostsEntry(entry_type="comment",
-                                                       comment=hosts_entry))
+                        local_entries.append(HostsEntry(entry_type="comment",
+                                                        comment=hosts_entry))
                     elif entry_type == "blank":
-                        self.entries.append(HostsEntry(entry_type="blank"))
+                        local_entries.append(HostsEntry(entry_type="blank"))
                     elif entry_type == "ipv4" or entry_type == "ipv6":
                         chunked_entry = hosts_entry.split()
-                        self.entries.append(
+                        local_entries.append(
                             HostsEntry(
                                 entry_type=entry_type,
                                 address=chunked_entry[0],
                                 names=chunked_entry[1:]))
+            
+            self.entries = local_entries
         except IOError:
             raise
