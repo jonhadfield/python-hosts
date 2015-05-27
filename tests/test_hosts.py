@@ -28,7 +28,7 @@ def test_add_single_ipv4_host_by_detection(tmpdir):
     hosts_file.write("127.0.0.1\tlocalhost\n")
     hosts = Hosts(path=hosts_file.strpath)
     new_entry = '3.4.5.6 bob jane.com'
-    hosts.add(entry=new_entry, force=False)
+    hosts.add(entries=[new_entry])
     assert hosts.count(new_entry).get('address_matches') == 1
 
 
@@ -57,7 +57,7 @@ def test_add_single_ipv4_host(tmpdir):
     hosts_file.write("127.0.0.1\tlocalhost\n")
     hosts = Hosts(path=hosts_file.strpath)
     new_entry = HostsEntry(entry_type='ipv4', address='123.123.123.123', names=['test.example.com'])
-    hosts.add(entry=new_entry, force=False)
+    hosts.add(entries=[new_entry])
     assert hosts.count(new_entry).get('address_matches') == 1
 
 

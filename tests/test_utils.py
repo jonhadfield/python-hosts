@@ -2,15 +2,13 @@
 import sys
 from os import path
 sys.path.insert(0, path.abspath(path.join(path.dirname(__file__), '..', 'hosts')))
-print sys.path
 from utils import is_ipv4, is_ipv6, valid_hostnames
 
 
 def test_ipv4_validation_success():
-    """
-    Test function returns True if valid IPv4 address is specified
-    """
+    """ Test function returns True if valid IPv4 address is specified """
     assert is_ipv4('8.8.8.8')
+
 
 def test_ipv4_validation_failure():
     """
