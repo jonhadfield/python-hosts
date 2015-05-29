@@ -32,7 +32,7 @@ def test_str_to_hostentry_returns_fails_with_false():
     assert not result
 
 
-def test_str_to_hostentry_comment():
-    str_entry = HostsEntry.str_to_hostentry('# An example comment')
-    assert str_entry.entry_type == 'comment'
-    assert str_entry.comment == '# An example comment'
+#def test_str_to_hostentry_comment():
+#    str_entry = HostsEntry.str_to_hostentry('# An example comment')
+#    assert str_entry.entry_type == 'comment'
+#    assert str_entry.comment == '# An example comment'
