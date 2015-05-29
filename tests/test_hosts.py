@@ -65,7 +65,7 @@ def test_existing_ipv6_addresses_are_preserved(tmpdir):
     TBC
     """
     hosts_file = tmpdir.mkdir("etc").join("hosts")
-    hosts_file.write("fe80::1%lo0\tlocalhost\n6.6.6.6\texample.com\n# A test comment\n\n")
+    hosts_file.write("fe80::1\tlocalhost\n6.6.6.6\texample.com\n# A test comment\n\n")
     hosts = Hosts(path=hosts_file.strpath)
     new_entry = HostsEntry(entry_type='ipv4', address='82.132.132.132', names=['something.com', 'example'])
     hosts.add(entries=[new_entry], force=False)
