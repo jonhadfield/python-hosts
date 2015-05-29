@@ -10,17 +10,12 @@ def test_addition_of_ipv6_entry_where_matching_exists_and_force_true(tmpdir):
     """
     Test replacement of an ipv6 entry where just the address differs
     """
-    print "\ntest_addition_of_ipv6_entry_where_matching_exists_and_force_true"
     hosts_file = tmpdir.mkdir("etc").join("hosts")
     hosts_file.write("fe80::200:f8ff:fe21:67cf\texample.com\texample\n")
     hosts_entries = Hosts(path=hosts_file.strpath)
-    print len(hosts_entries.entries)
-    print hosts_file.strpath
     new_entry = HostsEntry(entry_type='ipv6', address='2001:db8:a0b:12f0::1',
                            names=['example.com', 'example'])
-    print "NOW ABOUT TO ADD"
     hosts_entries.add(entries=[new_entry], force=True)
-    print "ADDED"
     exist_check = hosts_entries.exists(new_entry)
     assert exist_check.get('address_matches') == 1
     assert exist_check.get('name_matches') == 1
@@ -30,17 +25,12 @@ def test_addition_of_ipv6_entry_where_matching_exists_and_force_false(tmpdir):
     Test no replacement of an ipv6 entry where the address is different
     but there is a matching name and force is false
     """
-    print "\ntest_addition_of_ipv6_entry_where_matching_exists_and_force_true"
     hosts_file = tmpdir.mkdir("etc").join("hosts")
     hosts_file.write("fe80::200:f8ff:fe21:67cf\texample.com\texample\n")
     hosts_entries = Hosts(path=hosts_file.strpath)
-    print len(hosts_entries.entries)
-    print hosts_file.strpath
     new_entry = HostsEntry(entry_type='ipv6', address='2001:db8:a0b:12f0::1',
                            names=['example.com', 'example'])
-    print "NOW ABOUT TO ADD"
     hosts_entries.add(entries=[new_entry], force=False)
-    print "ADDED"
     exist_check = hosts_entries.exists(new_entry)
     assert exist_check.get('address_matches') == 0
     assert exist_check.get('name_matches') == 1
@@ -52,8 +42,6 @@ def test_addition_of_ipv4_entry_where_matching_exists_and_force_true(tmpdir):
     hosts_file = tmpdir.mkdir("etc").join("hosts")
     hosts_file.write("82.132.132.132\texample.com\texample\n")
     hosts_entries = Hosts(path=hosts_file.strpath)
-    for entry in hosts_entries.entries:
-        print "{} {} {}".format(entry.entry_type, entry.address, entry.names)
     new_entry = HostsEntry(entry_type='ipv4', address='82.132.132.132', names=['something.com', 'example'])
     hosts_entries.add(entries=[new_entry], force=True)
     exist_check = hosts_entries.exists(new_entry)
@@ -102,7 +90,6 @@ def test_import_from_url_counters_for_part_success(tmpdir):
     hosts = Hosts(path=hosts_file.strpath)
     import_url = "https://dl.dropboxusercontent.com/u/167103/hosts"
     result = hosts.import_url(url=import_url)
-    print "ADD RESULT = {}".format(result.get('add_result'))
     add_result = result.get('add_result')
     write_result = result.get('write_result')
     assert add_result.get('ipv4_count') == 1
@@ -369,42 +356,3 @@ def test_file_import_fails_when_not_readable(tmpdir):
     hosts_entries = Hosts(path=hosts_file.strpath)
     result = hosts_entries.import_file('/invalid_file')
     assert result.get('result') == 'failed'
-
-
-# def test_import_file_continues_on_empty_line(tmpdir):
-#    """
-#    Test an entry after an empty line is added successfully
-#    """
-#    hosts_file = tmpdir.mkdir("etc").join("hosts")
-#    hosts_file.write("82.132.132.132\texample.com\texample\n")
-#    import_file = tmpdir.mkdir("input").join("infile")
-#    import_file.write("\n10.10.10.10\thello.com")
-#    hosts_entries = Hosts(path=hosts_file.strpath)
-#    feedback = hosts_entries.import_file(import_file_path=import_file.strpath)
-#    assert feedback.get('result') == 'success'
-
-#def test_import_returns_failure_if_no_successes(tmpdir):
-#    """
-#    Test that a failure is returned if no entries can be imported
-#    """
-#    hosts_file = tmpdir.mkdir("etc").join("hosts")
-#    hosts_file.write("82.132.132.132\texample.com\texample\n")
-#    import_file = tmpdir.mkdir("input").join("infile")
-#    import_file.write("hello mum")
-#    hosts_entries = Hosts(path=hosts_file.strpath)
-#    feedback = hosts_entries.import_file(import_file.strpath)
-#    assert 'failed' in feedback.get('result')
-
-
-# def test_import_from_url(tmpdir):
-#    """
-#    Test that a simple import by URL succeeds
-#    """
-#    hosts_file = tmpdir.mkdir("etc").join("hosts")
-#    hosts_file.write("127.0.0.1\tlocalhost\n")
-#    hosts = Hosts(path=hosts_file.strpath)
-#    import_url = "https://dl.dropboxusercontent.com/u/167103/hosts"
-#    hosts.import_url(url=import_url)
-#    hosts = Hosts(path=hosts_file.strpath)
-#    assert hosts.count('66.66.66.66 example.com example').get('name_matches') == 1
-
