@@ -126,8 +126,10 @@ class Hosts(object):
         ipv4_entries_written = 0
         ipv6_entries_written = 0
         if is_writeable(self.hosts_path):
+            print "WRITING START"
             with open(self.hosts_path, 'w') as hosts_file:
                 for written_count, line in enumerate(self.entries):
+                    print "entry: {} {} {}".format(line.entry_type, line.address, line.names)
                     if line.entry_type == 'comment':
                         hosts_file.write(line.comment)
                         comments_written += 1
@@ -148,6 +150,11 @@ class Hosts(object):
                                 line.address,
                                 ' '.join(line.names),))
                         ipv6_entries_written += 1
+                print "END WRITING"
+                print "comments_written {}".format(comments_written)
+                print "blanks_written {}".format(blanks_written)
+                print "ipv4_entries_written {}".format(ipv4_entries_written)
+                print "ipv6_entries_written {}".format(ipv6_entries_written)
                 return {'total_written': written_count+1,
                         'comments_written': comments_written,
                         'blanks_written': blanks_written,
