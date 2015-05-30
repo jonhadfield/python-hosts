@@ -305,10 +305,9 @@ def test_hostsentry_initialisation_failure_with_invalid_address():
         HostsEntry(entry_type='ipv6', address='2001::1::3F', names=['example.com', 'example'])
 
 
-def test_io_exception_if_hosts_path_does_not_exist():
-    with pytest.raises(IOError):
-        Hosts(path="invalid")
-
+def test_no_entries_if_hosts_path_does_not_exist():
+    hosts = Hosts(path="invalid")
+    assert len(hosts.entries) == 0
 
 def test_line_break_identified_as_blank(tmpdir):
     new_line = "\n"

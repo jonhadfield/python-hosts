@@ -121,6 +121,7 @@ class Hosts(object):
         """
         Write the list of host entries back to the hosts file.
         """
+        written_count = 0
         comments_written = 0
         blanks_written = 0
         ipv4_entries_written = 0
@@ -316,4 +317,5 @@ class Hosts(object):
                                 address=chunked_entry[0].strip(),
                                 names=stripped_name_list))
         except IOError:
-            raise
+                return {'result': 'failed',
+                        'message': 'Cannot read: {0}.'.format(self.hosts_path)}
