@@ -286,7 +286,8 @@ class Hosts(object):
         return {'ipv4_count': ipv4_count,
                 'ipv6_count': ipv6_count,
                 'invalid_count': invalid_count,
-                'duplicate_count': duplicate_count}
+                'duplicate_count': duplicate_count,
+                'replaced_count': replaced_count}
 
     def populate_entries(self):
         """
