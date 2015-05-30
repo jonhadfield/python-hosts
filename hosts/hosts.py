@@ -219,6 +219,8 @@ class Hosts(object):
 
     def remove_matching(self, entry):
         removed_count = 0
+        if not entry:
+            return removed_count
         entries_to_remove = []
         for existing_entry in self.entries:
             if entry.entry_type == existing_entry.entry_type:
