@@ -177,7 +177,7 @@ class Hosts(object):
                 import_entry = HostsEntry.str_to_hostentry(line)
                 import_entries.append(import_entry)
         add_result = self.add(entries=import_entries)
-        self.dedupe_entries()
+        #self.dedupe_entries()
         write_result = self.write()
         return {'result': 'success',
                 'skipped': skipped,
@@ -210,12 +210,19 @@ class Hosts(object):
     def exists(self, entry):
         address_matches = 0
         name_matches = 0
-        for existing_entry in self.entries:
+        num_entry_names = len(entry.names)
+        local_entries = self.entries
+        for existing_entry in local_entries:
             if entry.entry_type == existing_entry.entry_type:
                 if entry.address == existing_entry.address:
                     address_matches += 1
-                if set(existing_entry.names).intersection(set(entry.names)):
-                    name_matches += 1
+                if num_entry_names == 1:
+                    if entry.names[0] == existing_entry.names[0]:
+                        name_matches += 1
+                elif num_entry_names > 1:
+                    if set(existing_entry.names).intersection(set(entry.names)):
+                        name_matches += 1
+
         return {'address_matches': address_matches,
                 'name_matches': name_matches}
 
