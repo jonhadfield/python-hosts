@@ -2,9 +2,8 @@
 
 import os
 import sys
-
-from setuptools import setup, find_packages
-from setuptools.command.test import test as TestCommand
+from setuptools import setup
+from setuptools.command.test import test as testcommand
 
 version = "0.1.87"
 
@@ -29,15 +28,21 @@ if sys.argv[-1] == 'readme':
     print(long_description)
     sys.exit()
 
-class PyTest(TestCommand):
+
+class PyTest(testcommand):
     user_options = [('pytest-args=', 'a', "Arguments to pass to py.test")]
 
+    def __init__(self):
+        super(testcommand, self).__init__()
+        self.pytest_args = None
+        self.test_args = None
+        self.test_suite = None
+
     def initialize_options(self):
-        TestCommand.initialize_options(self)
-        self.pytest_args = []
+        testcommand.initialize_options(self)
 
     def finalize_options(self):
-        TestCommand.finalize_options(self)
+        testcommand.finalize_options(self)
         self.test_args = []
         self.test_suite = True
 
