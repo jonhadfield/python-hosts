@@ -36,8 +36,10 @@ def valid_hostnames(hostname_list):
 def is_readable(path=None):
     if os.path.isfile(path) and os.access(path, os.R_OK):
         return True
+    return False
 
 
 def is_writeable(path=None):
     if os.path.isfile(path) and os.access(path, os.W_OK):
         return True
+    return False

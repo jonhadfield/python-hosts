@@ -107,10 +107,10 @@ class Hosts(object):
         deduped = []
         for entry in self.entries:
             if entry.entry_type in ('ipv4', 'ipv6'):
-                entry_hash = hashlib.sha224("{}{}{}".format(entry.entry_type,
-                                                            entry.address,
-                                                            entry.names
-                                                            )
+                entry_hash = hashlib.sha224("{0}{1}{2}".format(entry.entry_type,
+                                                               entry.address,
+                                                               entry.names
+                                                               )
                                             ).hexdigest()
                 if entry_hash not in existing_hashes:
                     deduped.append(entry)
@@ -217,22 +217,34 @@ class Hosts(object):
         return {'address_matches': address_matches,
                 'name_matches': name_matches}
 
-    def remove_matching(self, entry):
+    def remove_matching(self, entry=None, address=None, names=None):
+        names_list = []
+        if names:
+            names = names.replace(',', ' ')
+            names_list = names.split()
         removed_count = 0
-        if not entry:
+        if not any((entry, address, names)):
             return removed_count
         entries_to_remove = []
-        for existing_entry in self.entries:
-            if entry.entry_type == existing_entry.entry_type:
-                if entry.address == existing_entry.address:
-                    self.entries.remove(existing_entry)
-                    removed_count += 1
-                    continue
-                for name in entry.names:
-                    if name in existing_entry.names:
-                        entries_to_remove.append(existing_entry)
+        if entry:
+            for existing_entry in self.entries:
+                if entry.entry_type == existing_entry.entry_type:
+                    if entry.address == existing_entry.address:
+                        self.entries.remove(existing_entry)
                         removed_count += 1
                         continue
+                    for name in entry.names:
+                        if name in existing_entry.names:
+                            entries_to_remove.append(existing_entry)
+                            removed_count += 1
+                            continue
+        elif address or names_list:
+            for existing_entry in self.entries:
+                if existing_entry.entry_type in ('ipv4', 'ipv6'):
+                    if address == existing_entry.address or set(names_list).intersection(set(existing_entry.names)):
+                        self.entries.remove(existing_entry)
+                        removed_count += 1
+
         purged_list = [x for x in self.entries if x not in entries_to_remove]
         self.entries = purged_list
         return removed_count
