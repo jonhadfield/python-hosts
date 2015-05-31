@@ -115,6 +115,8 @@ class Hosts(object):
                 if entry_hash not in existing_hashes:
                     deduped.append(entry)
                     existing_hashes.append(entry_hash)
+            if entry.entry_type in ('comment', 'blank'):
+                    deduped.append(entry)
         self.entries = deduped
 
     def write(self):
