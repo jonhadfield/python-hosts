@@ -4,7 +4,8 @@ import sys
 import exception
 from utils import is_ipv4, is_ipv6, valid_hostnames, is_readable, is_writeable
 import urllib2
-
+import hashlib
+import os
 
 class HostsEntry(object):
     """ An entry in a hosts file. """
@@ -101,23 +102,29 @@ class Hosts(object):
         else: 
             return '/etc/hosts'
 
-    def dedupe_entries(self):
-        import hashlib
-        existing_hashes = []
-        deduped = []
-        for entry in self.entries:
-            if entry.entry_type in ('ipv4', 'ipv6'):
-                entry_hash = hashlib.sha224("{0}{1}{2}".format(entry.entry_type,
-                                                               entry.address,
-                                                               entry.names
-                                                               )
-                                            ).hexdigest()
-                if entry_hash not in existing_hashes:
-                    deduped.append(entry)
-                    existing_hashes.append(entry_hash)
-            if entry.entry_type in ('comment', 'blank'):
-                    deduped.append(entry)
-        self.entries = deduped
+#    def dedupe_entries(self):
+#        existing_type_address_hashes = []
+#        existing_names_hashes = []
+#        deduped = []
+#        for entry in self.entries:
+#            if entry.entry_type in ('ipv4', 'ipv6'):
+#                type_address_hash = hashlib.sha224("{0}{1}".format(entry.entry_type,
+#                                                                   entry.address)).hexdigest()
+#                names_hashes = []
+#                for name in entry.names:
+#                    hl = hashlib.sha224(name).hexdigest()
+#                    names_hashes.append(hl)
+
+#                if type_address_hash not in existing_type_address_hashes:
+#                    #print set(names_hashes)
+#                    #print set(existing_name_hashes)
+#                    if not set(tuple(existing_names_hashes)).intersection(tuple(names_hashes)):
+#                        deduped.append(entry)
+#                existing_type_address_hashes.append(type_address_hash)
+#                existing_names_hashes.append(names_hashes)
+#            if entry.entry_type in ('comment', 'blank'):
+#                    deduped.append(entry)
+#        self.entries = deduped
 
     def write(self):
         """
@@ -128,56 +135,110 @@ class Hosts(object):
         blanks_written = 0
         ipv4_entries_written = 0
         ipv6_entries_written = 0
-        if is_writeable(self.hosts_path):
-            with open(self.hosts_path, 'w') as hosts_file:
-                for written_count, line in enumerate(self.entries):
-                    if line.entry_type == 'comment':
-                        hosts_file.write(line.comment)
-                        comments_written += 1
-                    if line.entry_type == 'blank':
-                        hosts_file.write("\n")
-                        blanks_written += 1
-                    if line.entry_type == 'ipv4':
-                        hosts_file.write(
-                            "{0}\t{1}\n".format(
-                                line.address,
-                                ' '.join(line.names),
-                                )
+        if not os.path.exists(self.hosts_path):
+            filemode = 'a+'
+        if os.path.exists(self.hosts_path) and is_writeable(self.hosts_path):
+            filemode = 'w'
+        with open(self.hosts_path, filemode) as hosts_file:
+            for written_count, line in enumerate(self.entries):
+                if line.entry_type == 'comment':
+                    hosts_file.write(line.comment)
+                    comments_written += 1
+                if line.entry_type == 'blank':
+                    hosts_file.write("\n")
+                    blanks_written += 1
+                if line.entry_type == 'ipv4':
+                    hosts_file.write(
+                        "{0}\t{1}\n".format(
+                            line.address,
+                            ' '.join(line.names),
                             )
-                        ipv4_entries_written += 1
-                    if line.entry_type == 'ipv6':
-                        hosts_file.write(
-                            "{0}\t{1}\n".format(
-                                line.address,
-                                ' '.join(line.names),))
-                        ipv6_entries_written += 1
-                return {'total_written': written_count+1,
-                        'comments_written': comments_written,
-                        'blanks_written': blanks_written,
-                        'ipv4_entries_written': ipv4_entries_written,
-                        'ipv6_entries_written': ipv6_entries_written}
+                        )
+                    ipv4_entries_written += 1
+                if line.entry_type == 'ipv6':
+                    hosts_file.write(
+                        "{0}\t{1}\n".format(
+                            line.address,
+                            ' '.join(line.names),))
+                    ipv6_entries_written += 1
+            return {'total_written': written_count+1,
+                    'comments_written': comments_written,
+                    'blanks_written': blanks_written,
+                    'ipv4_entries_written': ipv4_entries_written,
+                    'ipv6_entries_written': ipv6_entries_written}
 
     @staticmethod
     def get_hosts_by_url(url=None):
         response = urllib2.urlopen(url)
         return response.read()
 
-    def import_url(self, url=None):
+    def remove_all_matching(self, address=None, name=None):
+        to_remove = []
+        if address:
+            to_remove = [x for x in self.entries if x.address == address]
+
+        if name:
+            to_remove = [x for x in self.entries if name in x.names]
+
+        for item_to_remove in to_remove:
+            self.entries.remove(item_to_remove)
+
+    def import_url(self, url=None, force=False):
         file_contents = self.get_hosts_by_url(url=url)
         file_contents = file_contents.rstrip().replace('^M', '\n')
         file_contents = file_contents.rstrip().replace('\r\n', '\n')
         lines = file_contents.split('\n')
         skipped = 0
         import_entries = []
+        existing_addresses = [x.address for x in self.entries if x.address]
+        existing_names = [x.names for x in self.entries if x.names]
         for line in lines:
             stripped_entry = line.strip()
             if (not stripped_entry) or (stripped_entry.startswith('#')):
                 skipped += 1
             else:
+                line = line.partition('#')[0]
+                line = line.rstrip()
                 import_entry = HostsEntry.str_to_hostentry(line)
-                import_entries.append(import_entry)
+                if import_entry:
+                    if import_entry.address in ('0.0.0.0', '127.0.0.1'):
+                        if len(import_entry.names) > 1:
+                            print "more than one name"
+                            for name in import_entry.names:
+                                if name in existing_names:
+                                    if not force:
+                                        skipped += 1
+                                        continue
+                                    else:
+                                        self.remove_all_matching(name=name)
+                                        import_entries.append(import_entry)
+                        elif [import_entry.names[0]] in existing_names:
+                            if not force:
+                                skipped += 1
+                                continue
+                            else:
+                                self.remove_all_matching(name=import_entry.names[0])
+                                import_entries.append(import_entry)
+                        else:
+                            import_entries.append(import_entry)
+
+                    elif import_entry.address in existing_addresses:
+                        if not force:
+                            skipped += 1
+                            continue
+                        else:
+                            self.remove_all_matching(address=import_entry.address)
+                            import_entries.append(import_entry)
+                    else:
+                        for name in import_entry.names:
+                            if name in existing_names:
+                                if not force:
+                                    skipped += 1
+                                    continue
+                                else:
+                                    self.remove_all_matching(name=name)
+                                    import_entries.append(import_entry)
         add_result = self.add(entries=import_entries)
-        #self.dedupe_entries()
         write_result = self.write()
         return {'result': 'success',
                 'skipped': skipped,
@@ -197,7 +258,6 @@ class Hosts(object):
                         import_entry = HostsEntry.str_to_hostentry(line)
                         import_entries.append(import_entry)
                 add_result = self.add(entries=import_entries)
-                self.dedupe_entries()
                 write_result = self.write()
                 return {'result': 'success',
                         'skipped': skipped,
@@ -206,57 +266,6 @@ class Hosts(object):
         else:
             return {'result': 'failed',
                     'message': 'Cannot read: file {0}.'.format(import_file_path)}
-
-    def exists(self, entry):
-        address_matches = 0
-        name_matches = 0
-        num_entry_names = len(entry.names)
-        local_entries = self.entries
-        for existing_entry in local_entries:
-            if entry.entry_type == existing_entry.entry_type:
-                if entry.address == existing_entry.address:
-                    address_matches += 1
-                if num_entry_names == 1:
-                    if entry.names[0] == existing_entry.names[0]:
-                        name_matches += 1
-                elif num_entry_names > 1:
-                    if set(existing_entry.names).intersection(set(entry.names)):
-                        name_matches += 1
-
-        return {'address_matches': address_matches,
-                'name_matches': name_matches}
-
-    def remove_matching(self, entry=None, address=None, names=None):
-        names_list = []
-        if names:
-            names = names.replace(',', ' ')
-            names_list = names.split()
-        removed_count = 0
-        if not any((entry, address, names)):
-            return removed_count
-        entries_to_remove = []
-        if entry:
-            for existing_entry in self.entries:
-                if entry.entry_type == existing_entry.entry_type:
-                    if entry.address == existing_entry.address:
-                        self.entries.remove(existing_entry)
-                        removed_count += 1
-                        continue
-                    for name in entry.names:
-                        if name in existing_entry.names:
-                            entries_to_remove.append(existing_entry)
-                            removed_count += 1
-                            continue
-        elif address or names_list:
-            for existing_entry in self.entries:
-                if existing_entry.entry_type in ('ipv4', 'ipv6'):
-                    if address == existing_entry.address or set(names_list).intersection(set(existing_entry.names)):
-                        self.entries.remove(existing_entry)
-                        removed_count += 1
-
-        purged_list = [x for x in self.entries if x not in entries_to_remove]
-        self.entries = purged_list
-        return removed_count
 
     def add(self, entries=None, force=None):
         """
@@ -270,36 +279,16 @@ class Hosts(object):
         duplicate_count = 0
         replaced_count = 0
 
-        for count, item in enumerate(entries):
+        for item in entries:
             if not isinstance(item, HostsEntry):
                 invalid_count += 1
                 continue
             if item.entry_type == 'ipv4':
-                exists = self.exists(item)
-                if (exists.get('name_matches')) and (item.address in ('0.0.0.0', '127.0.0.1')):
-                    duplicate_count += 1
-                    continue
-                elif item.address in ('0.0.0.0', '127.0.0.1'):
-                    ipv4_count += 1
-                elif exists.get('address_matches') or exists.get('name_matches'):
-                    if force:
-                        replaced_count += self.remove_matching(item)
-                        ipv4_count += 1
-                    else:
-                        duplicate_count += 1
-                        continue
-                else:
-                    ipv4_count += 1
+                ipv4_count += 1
+                self.entries.append(item)
             elif item.entry_type == 'ipv6':
-                exists_res = self.exists(item)
-                if exists_res.get('address_matches') or exists_res.get('name_matches'):
-                    if force:
-                        replaced_count += self.remove_matching(item)
-                        ipv6_count += 1
-                    else:
-                        duplicate_count += 1
-                        continue
-            self.entries.append(item)
+                ipv6_count += 1
+                self.entries.append(item)
         return {'ipv4_count': ipv4_count,
                 'ipv6_count': ipv6_count,
                 'invalid_count': invalid_count,
