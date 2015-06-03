@@ -4,8 +4,8 @@ import sys
 import exception
 from utils import is_ipv4, is_ipv6, valid_hostnames, is_readable, is_writeable
 import urllib2
-import hashlib
 import os
+
 
 class HostsEntry(object):
     """ An entry in a hosts file. """
@@ -135,6 +135,7 @@ class Hosts(object):
         blanks_written = 0
         ipv4_entries_written = 0
         ipv6_entries_written = 0
+        filemode = None
         if not os.path.exists(self.hosts_path):
             filemode = 'a+'
         if os.path.exists(self.hosts_path) and is_writeable(self.hosts_path):
@@ -172,14 +173,24 @@ class Hosts(object):
         response = urllib2.urlopen(url)
         return response.read()
 
+    def exists(self, address=None, names=None):
+        for entry in self.entries:
+            if address and address == entry.address:
+                return True
+            if names:
+                for name in names:
+                    if name in entry.names:
+                        return True
+        return False
+
     def remove_all_matching(self, address=None, name=None):
         to_remove = []
-        if address:
+        if address and name:
+            to_remove = [x for x in self.entries if x.address == address and name in x.names]
+        elif address:
             to_remove = [x for x in self.entries if x.address == address]
-
-        if name:
+        elif name:
             to_remove = [x for x in self.entries if name in x.names]
-
         for item_to_remove in to_remove:
             self.entries.remove(item_to_remove)
 
@@ -190,8 +201,6 @@ class Hosts(object):
         lines = file_contents.split('\n')
         skipped = 0
         import_entries = []
-        existing_addresses = [x.address for x in self.entries if x.address]
-        existing_names = [x.names for x in self.entries if x.names]
         for line in lines:
             stripped_entry = line.strip()
             if (not stripped_entry) or (stripped_entry.startswith('#')):
@@ -201,43 +210,7 @@ class Hosts(object):
                 line = line.rstrip()
                 import_entry = HostsEntry.str_to_hostentry(line)
                 if import_entry:
-                    if import_entry.address in ('0.0.0.0', '127.0.0.1'):
-                        if len(import_entry.names) > 1:
-                            print "more than one name"
-                            for name in import_entry.names:
-                                if name in existing_names:
-                                    if not force:
-                                        skipped += 1
-                                        continue
-                                    else:
-                                        self.remove_all_matching(name=name)
-                                        import_entries.append(import_entry)
-                        elif [import_entry.names[0]] in existing_names:
-                            if not force:
-                                skipped += 1
-                                continue
-                            else:
-                                self.remove_all_matching(name=import_entry.names[0])
-                                import_entries.append(import_entry)
-                        else:
-                            import_entries.append(import_entry)
-
-                    elif import_entry.address in existing_addresses:
-                        if not force:
-                            skipped += 1
-                            continue
-                        else:
-                            self.remove_all_matching(address=import_entry.address)
-                            import_entries.append(import_entry)
-                    else:
-                        for name in import_entry.names:
-                            if name in existing_names:
-                                if not force:
-                                    skipped += 1
-                                    continue
-                                else:
-                                    self.remove_all_matching(name=name)
-                                    import_entries.append(import_entry)
+                    import_entries.append(import_entry)
         add_result = self.add(entries=import_entries)
         write_result = self.write()
         return {'result': 'success',
@@ -247,6 +220,7 @@ class Hosts(object):
 
     def import_file(self, import_file_path=None):
         skipped = 0
+        invalid_count = 0
         if is_readable(import_file_path):
             import_entries = []
             with open(import_file_path, 'r') as infile:
@@ -255,19 +229,25 @@ class Hosts(object):
                     if (not stripped_entry) or (stripped_entry.startswith('#')):
                         skipped += 1
                     else:
+                        line = line.partition('#')[0]
+                        line = line.rstrip()
                         import_entry = HostsEntry.str_to_hostentry(line)
-                        import_entries.append(import_entry)
-                add_result = self.add(entries=import_entries)
-                write_result = self.write()
-                return {'result': 'success',
-                        'skipped': skipped,
-                        'add_result': add_result,
-                        'write_result': write_result}
+                        if import_entry:
+                            import_entries.append(import_entry)
+                        else:
+                            invalid_count += 1
+            add_result = self.add(entries=import_entries)
+            write_result = self.write()
+            return {'result': 'success',
+                    'skipped': skipped,
+                    'invalid_count': invalid_count,
+                    'add_result': add_result,
+                    'write_result': write_result}
         else:
             return {'result': 'failed',
                     'message': 'Cannot read: file {0}.'.format(import_file_path)}
 
-    def add(self, entries=None, force=None):
+    def add(self, entries=None, force=False):
         """
         Adds to the instance list of entries.
         :param entries: A list of instances of HostsEntry
@@ -278,8 +258,59 @@ class Hosts(object):
         invalid_count = 0
         duplicate_count = 0
         replaced_count = 0
+        skipped = 0
+        import_entries = []
+        existing_addresses = [x.address for x in self.entries if x.address]
+        existing_names = [x.names for x in self.entries if x.names]
+        for count, entry in enumerate(entries):
+            if entry.address in ('0.0.0.0', '127.0.0.1'):
+                if len(entry.names) > 1:
+                    for name in entry.names:
+                        if name in existing_names:
+                            if not force:
+                                skipped += 1
+                                duplicate_count += 1
+                                break
+                            else:
+                                self.remove_all_matching(name=name)
+                                import_entries.append(entry)
+                                break
+                elif [entry.names[0]] in existing_names:
+                    if not force:
+                        duplicate_count += 1
+                        skipped += 1
+                        continue
+                    else:
+                        self.remove_all_matching(name=entry.names[0])
+                        import_entries.append(entry)
+                else:
+                    import_entries.append(entry)
+            elif entry.address in existing_addresses:
+                if not force:
+                    duplicate_count += 1
+                    skipped += 1
+                    continue
+                elif force:
+                    self.remove_all_matching(address=entry.address)
+                    import_entries.append(entry)
+            else:
+                for name in entry.names:
+                    for sublist in existing_names:
+                        if name in sublist:
+                            if not force:
+                                duplicate_count += 1
+                                skipped += 1
+                                break
+                            else:
+                                self.remove_all_matching(name=name)
+                                import_entries.append(entry)
+                                break
+                    # Else it's a new entry
+                    else:
+                        import_entries.append(entry)
+                        break
 
-        for item in entries:
+        for item in import_entries:
             if not isinstance(item, HostsEntry):
                 invalid_count += 1
                 continue
