@@ -194,7 +194,7 @@ class Hosts(object):
         for item_to_remove in to_remove:
             self.entries.remove(item_to_remove)
 
-    def import_url(self, url=None, force=False):
+    def import_url(self, url=None):
         file_contents = self.get_hosts_by_url(url=url)
         file_contents = file_contents.rstrip().replace('^M', '\n')
         file_contents = file_contents.rstrip().replace('\r\n', '\n')
@@ -282,6 +282,7 @@ class Hosts(object):
                         continue
                     else:
                         self.remove_all_matching(name=entry.names[0])
+                        replaced_count += 1
                         import_entries.append(entry)
                 else:
                     import_entries.append(entry)
@@ -292,6 +293,7 @@ class Hosts(object):
                     continue
                 elif force:
                     self.remove_all_matching(address=entry.address)
+                    replaced_count += 1
                     import_entries.append(entry)
             else:
                 for name in entry.names:
@@ -303,6 +305,7 @@ class Hosts(object):
                                 break
                             else:
                                 self.remove_all_matching(name=name)
+                                replaced_count += 1
                                 import_entries.append(entry)
                                 break
                     # Else it's a new entry
