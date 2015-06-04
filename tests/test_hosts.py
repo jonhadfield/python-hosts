@@ -8,6 +8,26 @@ import pytest
 from hosts import Hosts, HostsEntry, exception
 
 
+def test_import_from_url_counters_for_part_success(tmpdir):
+    """
+    Test that correct 'success, fail, skip' counters are returned
+    when there is at least a single successful imported host entry
+
+    There will be a single entry written before import.
+    Importing file will include two valid IPV4 entries and an invalid entry.
+    One of the two valid import lines will include a duplicate set of names.
+    """
+    hosts_file = tmpdir.mkdir("etc").join("hosts")
+    hosts_file.write("6.6.6.6\texample.com\n")
+    hosts = Hosts(path=hosts_file.strpath)
+    import_url = "https://dl.dropboxusercontent.com/u/167103/hosts"
+    result = hosts.import_url(url=import_url)
+    add_result = result.get('add_result')
+    write_result = result.get('write_result')
+    assert add_result.get('ipv4_count') == 4
+    assert write_result.get('total_written') == 5
+
+
 def test_write_will_create_path_if_missing():
     """
     Test that the hosts file declared when constructing a Hosts instance will
@@ -33,9 +53,6 @@ def test_add_adblock_entry_without_force_multiple_names(tmpdir):
     hosts_file = tmpdir.mkdir("etc").join("hosts")
     hosts_file.write(ipv4_line)
     hosts_entries = Hosts(path=hosts_file.strpath)
-    print "\nhosts_entries: {}".format(hosts_entries)
-    for a in hosts_entries.entries:
-        print "type = : {}".format(a.entry_type)
     new_entry = HostsEntry.str_to_hostentry('0.0.0.0 example.com example3.com')
     hosts_entries.add(entries=[new_entry], force=False)
     assert hosts_entries.exists(names=['example2.com'])
@@ -227,26 +244,6 @@ def test_import_file_returns_duplicate_correctly(tmpdir):
     write_result = feedback.get('write_result')
     assert add_result.get('duplicate_count') == 1
     assert write_result.get('ipv4_entries_written') == 2
-
-
-def test_import_from_url_counters_for_part_success(tmpdir):
-    """
-    Test that correct 'success, fail, skip' counters are returned
-    when there is at least a single successful imported host entry
-
-    There will be a single entry written before import.
-    Importing file will include two valid IPV4 entries and an invalid entry.
-    One of the two valid import lines will include a duplicate set of names.
-    """
-    hosts_file = tmpdir.mkdir("etc").join("hosts")
-    hosts_file.write("6.6.6.6\texample.com\n")
-    hosts = Hosts(path=hosts_file.strpath)
-    import_url = "https://dl.dropboxusercontent.com/u/167103/hosts"
-    result = hosts.import_url(url=import_url)
-    add_result = result.get('add_result')
-    write_result = result.get('write_result')
-    assert add_result.get('ipv4_count') == 2
-    assert write_result.get('total_written') == 3
 
 
 def test_addition_of_ipv6_entry_where_matching_name_exists_and_force_false(tmpdir):
