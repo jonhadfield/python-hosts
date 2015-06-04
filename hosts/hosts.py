@@ -223,6 +223,12 @@ class Hosts(object):
             return {'result': 'failed',
                     'message': 'Cannot read: file {0}.'.format(import_file_path)}
 
+    @staticmethod
+    def dedupe_list(seq):
+        seen = set()
+        seen_add = seen.add
+        return [x for x in seq if not (x in seen or seen_add(x))]
+
     def add(self, entries=None, force=False):
         """
         Adds to the instance list of entries.
@@ -237,21 +243,34 @@ class Hosts(object):
         skipped = 0
         import_entries = []
         existing_addresses = [x.address for x in self.entries if x.address]
-        existing_names = [x.names for x in self.entries if x.names]
+        existing_names = []
+        for item in self.entries:
+            if item.names and len(item.names) > 1:
+                for name in item.names:
+                    existing_names.append(name)
+            elif item.names:
+                existing_names.append(item.names[0])
+        existing_names = self.dedupe_list(existing_names)
         for count, entry in enumerate(entries):
             if entry.address in ('0.0.0.0', '127.0.0.1'):
                 if len(entry.names) > 1:
+                    found_name = False
                     for name in entry.names:
-                        if name in existing_names[0]:
+                        if name in existing_names:
                             if force:
                                 self.remove_all_matching(name=name)
                                 import_entries.append(entry)
+                                found_name = True
                                 break
                             else:
                                 skipped += 1
                                 duplicate_count += 1
+                                found_name = True
                                 break
-                elif entry.names[0] in existing_names[0]:
+                    if found_name:
+                        break
+                    import_entries.append(entry)
+                elif entry.names[0] in existing_names:
                     duplicate_count += 1
                     skipped += 1
                 else:
