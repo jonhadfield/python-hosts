@@ -102,30 +102,6 @@ class Hosts(object):
         else: 
             return '/etc/hosts'
 
-#    def dedupe_entries(self):
-#        existing_type_address_hashes = []
-#        existing_names_hashes = []
-#        deduped = []
-#        for entry in self.entries:
-#            if entry.entry_type in ('ipv4', 'ipv6'):
-#                type_address_hash = hashlib.sha224("{0}{1}".format(entry.entry_type,
-#                                                                   entry.address)).hexdigest()
-#                names_hashes = []
-#                for name in entry.names:
-#                    hl = hashlib.sha224(name).hexdigest()
-#                    names_hashes.append(hl)
-
-#                if type_address_hash not in existing_type_address_hashes:
-#                    #print set(names_hashes)
-#                    #print set(existing_name_hashes)
-#                    if not set(tuple(existing_names_hashes)).intersection(tuple(names_hashes)):
-#                        deduped.append(entry)
-#                existing_type_address_hashes.append(type_address_hash)
-#                existing_names_hashes.append(names_hashes)
-#            if entry.entry_type in ('comment', 'blank'):
-#                    deduped.append(entry)
-#        self.entries = deduped
-
     def write(self):
         """
         Write the list of host entries back to the hosts file.
@@ -253,9 +229,6 @@ class Hosts(object):
         :param entries: A list of instances of HostsEntry
         :return: The number of successes and failures
         """
-        print "\nin add. force: {}".format(force)
-        for bob in entries:
-            print "type = {} address = {} names = {}".format(bob.entry_type, bob.address, bob.names)
         ipv4_count = 0
         ipv6_count = 0
         invalid_count = 0
@@ -265,68 +238,51 @@ class Hosts(object):
         import_entries = []
         existing_addresses = [x.address for x in self.entries if x.address]
         existing_names = [x.names for x in self.entries if x.names]
-        if existing_names:
-            print "existing_names = {}".format(existing_names[0])
-            for count, entry in enumerate(entries):
-                if entry.address in ('0.0.0.0', '127.0.0.1'):
-                    if len(entry.names) > 1:
-                        for name in entry.names:
-                            print "in here"
-                            print "name: {}".format(name)
-                            print "existing_names[0]"
-                            if name in existing_names[0]:
-                                print "in the existing_names loop. force = {}".format(force)
-                                if force:
-                                    print "FORCE.... {}".format(force)
-                                    self.remove_all_matching(name=name)
-                                    import_entries.append(entry)
-                                    break
-                                else:
-                                    skipped += 1
-                                    duplicate_count += 1
-                                    break
-                    elif entry.names[0] in existing_names[0]:
-                        #if not force:
-                        duplicate_count += 1
-                        skipped += 1
-                        #    continue
-                        #else:
-                        #    self.remove_all_matching(name=entry.names[0])
-                        #    replaced_count += 1
-                        #    import_entries.append(entry)
+        for count, entry in enumerate(entries):
+            if entry.address in ('0.0.0.0', '127.0.0.1'):
+                if len(entry.names) > 1:
+                    for name in entry.names:
+                        if name in existing_names[0]:
+                            if force:
+                                self.remove_all_matching(name=name)
+                                import_entries.append(entry)
+                                break
+                            else:
+                                skipped += 1
+                                duplicate_count += 1
+                                break
+                elif entry.names[0] in existing_names[0]:
+                    duplicate_count += 1
+                    skipped += 1
+                else:
+                    import_entries.append(entry)
+            elif entry.address in existing_addresses:
+                if not force:
+                    duplicate_count += 1
+                    skipped += 1
+                    continue
+                elif force:
+                    self.remove_all_matching(address=entry.address)
+                    replaced_count += 1
+                    import_entries.append(entry)
+            else:
+                for name in entry.names:
+                    for sublist in existing_names:
+                        if name in sublist:
+                            if not force:
+                                duplicate_count += 1
+                                skipped += 1
+                                break
+                            else:
+                                self.remove_all_matching(name=name)
+                                replaced_count += 1
+                                import_entries.append(entry)
+                                break
                     else:
                         import_entries.append(entry)
-                elif entry.address in existing_addresses:
-                    if not force:
-                        duplicate_count += 1
-                        skipped += 1
-                        continue
-                    elif force:
-                        self.remove_all_matching(address=entry.address)
-                        replaced_count += 1
-                        import_entries.append(entry)
-                else:
-                    for name in entry.names:
-                        for sublist in existing_names:
-                            if name in sublist:
-                                if not force:
-                                    duplicate_count += 1
-                                    skipped += 1
-                                    break
-                                else:
-                                    self.remove_all_matching(name=name)
-                                    replaced_count += 1
-                                    import_entries.append(entry)
-                                    break
-                        # Else it's a new entry
-                        else:
-                            import_entries.append(entry)
-                            break
+                        break
 
         for item in import_entries:
-            # if not isinstance(item, HostsEntry):
-            #    invalid_count += 1
-            #    continue
             if item.entry_type == 'ipv4':
                 ipv4_count += 1
                 self.entries.append(item)

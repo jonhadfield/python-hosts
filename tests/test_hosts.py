@@ -7,37 +7,6 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
 import pytest
 from hosts import Hosts, HostsEntry, exception
 
-def test_add_adblock_entry_without_force_multiple_names(tmpdir):
-    """
-    TBC
-    """
-    ipv4_line = '0.0.0.0 example2.com example3.com'
-    hosts_file = tmpdir.mkdir("etc").join("hosts")
-    hosts_file.write(ipv4_line)
-    hosts_entries = Hosts(path=hosts_file.strpath)
-    print "\nhosts_entries: {}".format(hosts_entries)
-    for a in hosts_entries.entries:
-        print "type = : {}".format(a.entry_type)
-    #assert hosts_entries.exists(address='0.0.0.0')
-    new_entry = HostsEntry.str_to_hostentry('0.0.0.0 example.com example3.com')
-    hosts_entries.add(entries=[new_entry], force=False)
-    assert hosts_entries.exists(names=['example2.com'])
-
-def test_add_adblock_entry_with_force_single_name(tmpdir):
-    """
-    TBC
-    """
-    ipv4_line = '0.0.0.0 example2.com example3.com'
-    hosts_file = tmpdir.mkdir("etc").join("hosts")
-    hosts_file.write(ipv4_line)
-    hosts_entries = Hosts(path=hosts_file.strpath)
-    print "\nhosts_entries: {}".format(hosts_entries)
-    for a in hosts_entries.entries:
-        print "type = : {}".format(a.entry_type)
-    #assert hosts_entries.exists(address='0.0.0.0')
-    new_entry = HostsEntry.str_to_hostentry('0.0.0.0 example.com example3.com')
-    hosts_entries.add(entries=[new_entry], force=True)
-    assert hosts_entries.exists(names=['example.com'])
 
 def test_write_will_create_path_if_missing():
     """
@@ -51,13 +20,38 @@ def test_write_will_create_path_if_missing():
     entry = HostsEntry.str_to_hostentry('1.2.3.4 example.com example.org')
     hosts.add(entries=[entry])
     hosts.write()
-    #new_hosts = Hosts(path=hosts_path)
-    for host in hosts.entries:
-        print host.address
-    print hosts.exists(address='1.2.3.4')
-    #assert 0
+    hosts2 = Hosts(path=hosts_path)
     os.remove(hosts_path)
+    assert hosts2.exists(address='1.2.3.4')
 
+
+def test_add_adblock_entry_without_force_multiple_names(tmpdir):
+    """
+    TBC
+    """
+    ipv4_line = '0.0.0.0 example2.com example3.com'
+    hosts_file = tmpdir.mkdir("etc").join("hosts")
+    hosts_file.write(ipv4_line)
+    hosts_entries = Hosts(path=hosts_file.strpath)
+    print "\nhosts_entries: {}".format(hosts_entries)
+    for a in hosts_entries.entries:
+        print "type = : {}".format(a.entry_type)
+    new_entry = HostsEntry.str_to_hostentry('0.0.0.0 example.com example3.com')
+    hosts_entries.add(entries=[new_entry], force=False)
+    assert hosts_entries.exists(names=['example2.com'])
+
+
+def test_add_adblock_entry_with_force_single_name(tmpdir):
+    """
+    TBC
+    """
+    ipv4_line = '0.0.0.0 example2.com example3.com'
+    hosts_file = tmpdir.mkdir("etc").join("hosts")
+    hosts_file.write(ipv4_line)
+    hosts_entries = Hosts(path=hosts_file.strpath)
+    new_entry = HostsEntry.str_to_hostentry('0.0.0.0 example.com example3.com')
+    hosts_entries.add(entries=[new_entry], force=True)
+    assert hosts_entries.exists(names=['example.com'])
 
 
 def test_add_adblock_entry_with_force_with_target_having_multiple_names(tmpdir):
@@ -85,11 +79,6 @@ def test_add_adblock_entry_without_force_with_target_having_multiple_names(tmpdi
     assert hosts_entries.exists(address='0.0.0.0')
     new_entry = HostsEntry.str_to_hostentry('0.0.0.0 example.com')
     hosts_entries.add(entries=[new_entry])
-    #assert hosts_entries.exists(names=['example.com'])
-    #hosts_entries.remove_all_matching(address='1.2.3.4', name='example.com')
-    #assert not hosts_entries.exists(address='1.2.3.4')
-    #assert not hosts_entries.exists(names=['example.com'])
-
 
 
 def test_remove_existing_ipv4_address_using_hostsentry(tmpdir):
