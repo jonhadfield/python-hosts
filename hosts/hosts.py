@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 """
 This module contains classes:
-Hosts:      A representation of a hosts file, e.g. /etc/hosts and c:\windows\system32\drivers\etc\hosts
-            for a linux or MS windows based machine respectively. Each entry being represented as an instance
-            of the HostsEntry class.
+Hosts:      A representation of a hosts file, e.g. /etc/hosts
+            and c:\windows\system32\drivers\etc\hosts for a linux or MS windows
+            based machine respectively. Each entry being represented as
+            an instance of the HostsEntry class.
 
-HostsEntry: A representation of a hosts file entry, i.e. a line containing an IP address and name(s),
-            a comment, or a blank line/line separator.
+HostsEntry: A representation of a hosts file entry, i.e. a line
+            containing an IP address and name(s), a comment, or
+            a blank line/line separator.
 """
 import sys
 import exception
@@ -19,7 +21,11 @@ class HostsEntry(object):
     """ An entry in a hosts file. """
     __slots__ = ['entry_type', 'address', 'comment', 'names']
 
-    def __init__(self, entry_type=None, address=None, comment=None, names=None):
+    def __init__(self,
+                 entry_type=None,
+                 address=None,
+                 comment=None,
+                 names=None):
         """
         Initialise an instance of a Hosts file entry
         :param entry_type: ipv4 | ipv6 | comment | blank
@@ -84,10 +90,14 @@ class HostsEntry(object):
             line_parts = entry.strip().split()
             if is_ipv4(line_parts[0]):
                 if valid_hostnames(line_parts[1:]):
-                    return HostsEntry(entry_type='ipv4', address=line_parts[0], names=line_parts[1:])
+                    return HostsEntry(entry_type='ipv4',
+                                      address=line_parts[0],
+                                      names=line_parts[1:])
             elif is_ipv6(line_parts[0]):
                 if valid_hostnames(line_parts[1:]):
-                    return HostsEntry(entry_type='ipv6', address=line_parts[0], names=line_parts[1:])
+                    return HostsEntry(entry_type='ipv6',
+                                      address=line_parts[0],
+                                      names=line_parts[1:])
             else:
                 return False
 
@@ -196,7 +206,8 @@ class Hosts(object):
 
     def remove_all_matching(self, address=None, name=None):
         """
-        Remove all HostsEntry instances from the Hosts object where the supplied ip address or name matches
+        Remove all HostsEntry instances from the Hosts object
+        where the supplied ip address or name matches
         :param address: An ipv4 or ipv6 address
         :param name: A host name
         :return: None
@@ -243,8 +254,8 @@ class Hosts(object):
 
     def import_file(self, import_file_path=None):
         """
-        Read a list of host entries from a file, convert them into instances of HostsEntry and
-        then append to the list of entries in Hosts
+        Read a list of host entries from a file, convert them into instances
+        of HostsEntry and then append to the list of entries in Hosts
         :param import_file_path: The path to the file containing the host entries
         :return: Counts reflecting the attempted additions
         """
@@ -253,7 +264,7 @@ class Hosts(object):
         if is_readable(import_file_path):
             import_entries = []
             with open(import_file_path, 'r') as infile:
-                for entries_count, line in enumerate(infile):
+                for line in infile:
                     stripped_entry = line.strip()
                     if (not stripped_entry) or (stripped_entry.startswith('#')):
                         skipped += 1
@@ -298,7 +309,6 @@ class Hosts(object):
         invalid_count = 0
         duplicate_count = 0
         replaced_count = 0
-        skipped = 0
         import_entries = []
         existing_addresses = [x.address for x in self.entries if x.address]
         existing_names = []
@@ -309,7 +319,7 @@ class Hosts(object):
             elif item.names:
                 existing_names.append(item.names[0])
         existing_names = self.dedupe_list(existing_names)
-        for count, entry in enumerate(entries):
+        for entry in entries:
             if entry.address in ('0.0.0.0', '127.0.0.1'):
                 if len(entry.names) > 1:
                     found_name = False
@@ -321,7 +331,6 @@ class Hosts(object):
                                 found_name = True
                                 break
                             else:
-                                skipped += 1
                                 duplicate_count += 1
                                 found_name = True
                                 break
@@ -330,13 +339,11 @@ class Hosts(object):
                     import_entries.append(entry)
                 elif entry.names[0] in existing_names:
                     duplicate_count += 1
-                    skipped += 1
                 else:
                     import_entries.append(entry)
             elif entry.address in existing_addresses:
                 if not force:
                     duplicate_count += 1
-                    skipped += 1
                     continue
                 elif force:
                     self.remove_all_matching(address=entry.address)
@@ -348,7 +355,6 @@ class Hosts(object):
                         if name in sublist:
                             if not force:
                                 duplicate_count += 1
-                                skipped += 1
                                 break
                             else:
                                 self.remove_all_matching(name=name)
@@ -377,10 +383,6 @@ class Hosts(object):
         Called by the initialiser of Hosts. This reads the entries from the local hosts file,
         converts them into instances of HostsEntry and adds them to the Hosts list of entries.
         :return: None
-        """
-        """
-        Read all hosts file entries from the hosts file specified
-        and store them as HostEntry's in an instance of Hosts.
         """
         try:
             with open(self.hosts_path, 'r') as hosts_file:
