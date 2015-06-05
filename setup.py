@@ -52,19 +52,15 @@ class PyTest(testcommand):
         sys.exit(errno)
 
 setup(
-    name='hosts',
+    name='python-hosts',
     version=version,
-    url='http://github.com/jonhadfield/hosts/',
+    url='http://github.com/jonhadfield/python-hosts/',
     author='Jon Hadfield',
     author_email='jon.hadfield@lessknown.co.uk',
     install_requires=[],
     description='Manage a hosts file',
     long_description=long_description,
-    packages=[
-        'hosts',
-    ],
-    package_dir={'hosts': 'hosts'},
-    include_package_data=True,
+    packages=['python-hosts'],
     platforms='any',
     license='MIT',
     classifiers=[
@@ -79,7 +75,7 @@ setup(
         'Topic :: System :: Networking',
     ],
     keywords=(
-        'hosts, Python, network'
+        'hosts, python, network'
     ),
     cmdclass = {'test': PyTest},
     test_suite='tests',

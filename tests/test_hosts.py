@@ -3,7 +3,7 @@ import sys
 import os
 import datetime
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'hosts')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'python-hosts')))
 import pytest
 from hosts import Hosts, HostsEntry, exception
 
