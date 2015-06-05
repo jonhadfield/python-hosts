@@ -10,12 +10,12 @@ from hosts import Hosts, HostsEntry, exception
 
 def test_import_from_url_counters_for_part_success(tmpdir):
     """
-    Test that correct 'success, fail, skip' counters are returned
-    when there is at least a single successful imported host entry
+    Test that correct counters are returned when there is at least a
+    single successful imported host entry
 
     There will be a single entry written before import.
-    Importing file will include two valid IPV4 entries and an invalid entry.
-    One of the two valid import lines will include a duplicate set of names.
+    Importing file will include three valid IPV4 entries and an invalid entry.
+    One of the three valid import lines will include a duplicate set of names.
     """
     hosts_file = tmpdir.mkdir("etc").join("hosts")
     hosts_file.write("6.6.6.6\texample.com\n")
@@ -47,7 +47,8 @@ def test_write_will_create_path_if_missing():
 
 def test_add_adblock_entry_without_force_multiple_names(tmpdir):
     """
-    TBC
+    Test that addition of an adblock entry does not succeed if force is not set
+    and there is a matching name
     """
     ipv4_line = '0.0.0.0 example2.com example3.com'
     hosts_file = tmpdir.mkdir("etc").join("hosts")
@@ -60,7 +61,8 @@ def test_add_adblock_entry_without_force_multiple_names(tmpdir):
 
 def test_add_adblock_entry_with_force_single_name(tmpdir):
     """
-    TBC
+    Test that an addition of an adblock entry replaces one with a matching name
+    if force is True
     """
     ipv4_line = '0.0.0.0 example2.com example3.com'
     hosts_file = tmpdir.mkdir("etc").join("hosts")
@@ -73,7 +75,8 @@ def test_add_adblock_entry_with_force_single_name(tmpdir):
 
 def test_add_adblock_entry_with_force_with_target_having_multiple_names(tmpdir):
     """
-    TBC
+    Test that an addition of an adblock entry replaces one with a matching name
+    if force is True (multiple names)
     """
     ipv4_line = '0.0.0.0 example.com example2.com'
     hosts_file = tmpdir.mkdir("etc").join("hosts")
@@ -87,7 +90,8 @@ def test_add_adblock_entry_with_force_with_target_having_multiple_names(tmpdir):
 
 def test_add_adblock_entry_without_force_with_target_having_multiple_names(tmpdir):
     """
-    TBC
+    Test that addition of an adblock entry does not succeed if force is not set
+    and there is a matching name (matching names)
     """
     ipv4_line = '0.0.0.0 example.com'
     hosts_file = tmpdir.mkdir("etc").join("hosts")
@@ -264,7 +268,8 @@ def test_addition_of_ipv6_entry_where_matching_name_exists_and_force_false(tmpdi
 
 def test_existing_ipv6_addresses_are_preserved(tmpdir):
     """
-    TBC
+    Test that existing ipv6 addresses are preserved after adding
+    an ipv4 entry
     """
     hosts_file = tmpdir.mkdir("etc").join("hosts")
     hosts_file.write("fe80::1\tlocalhost\n6.6.6.6\texample.com\n# A test comment\n\n")
@@ -293,7 +298,8 @@ def test_addition_of_ipv4_entry_where_matching_exists_and_force_true(tmpdir):
 
 def test_existing_comments_and_blanks_are_preserved(tmpdir):
     """
-    TBC
+    Test that comments and newlines/blanks that exist in the file prior to
+    changes are preserved after a new entry is added
     """
     hosts_file = tmpdir.mkdir("etc").join("hosts")
     hosts_file.write("6.6.6.6\texample.com\n# A test comment\n\n")
@@ -357,11 +363,17 @@ def test_hostsentry_initialisation_failure_with_invalid_address():
 
 
 def test_no_entries_if_hosts_path_does_not_exist():
+    """
+    Test that no entries are returned if the hosts path is invalid
+    """
     hosts = Hosts(path="invalid")
     assert len(hosts.entries) == 0
 
 
 def test_line_break_identified_as_blank(tmpdir):
+    """
+    Test that a new line is identified as a blank
+    """
     new_line = "\n"
     hosts_file = tmpdir.mkdir("etc").join("hosts")
     hosts_file.write(new_line)
@@ -370,6 +382,9 @@ def test_line_break_identified_as_blank(tmpdir):
 
 
 def test_get_entry_type():
+    """
+    Test that the correct entry type is returned for an ipv6 address
+    """
     assert HostsEntry.get_entry_type('# This is a comment') == 'comment'
     assert HostsEntry.get_entry_type('\n') == 'blank'
     assert HostsEntry.get_entry_type('1.2.3.4 example.com example') == 'ipv4'
@@ -378,22 +393,33 @@ def test_get_entry_type():
 
 
 def test_windows_platform_detection():
+    """
+    Test that specifying platform 'windows' returns the default windows
+    path to the hosts file
+    """
     assert Hosts.determine_hosts_path(platform='windows') == r'c:\windows\system32\drivers\etc\hosts'
 
 
 def test_osx_platform_detection():
+    """
+    Test that specifying platform 'darwin' returns the default OSX
+    path to the hosts file
+    """
     assert Hosts.determine_hosts_path(platform='darwin') == '/etc/hosts'
 
 
 def test_linux_platform_detection():
+    """
+    Test that specifying platform 'linux' returns the default linux
+    path to the hosts file
+    """
     assert Hosts.determine_hosts_path(platform='linux') == '/etc/hosts'
 
 
-def test_default_platform_detection():
-    assert Hosts.determine_hosts_path() == '/etc/hosts'
-
-
 def test_read_hosts_with_platform_detection():
+    """
+    Test that an instance of Hosts is returned using detection and initialiser
+    """
     test_hosts = Hosts()
     assert isinstance(test_hosts, Hosts)
 
