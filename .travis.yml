@@ -6,6 +6,6 @@ before_install:
     - pip install coveralls
 script:
     #- py.test
-    - py.test --cov-report term-missing --cov hosts
+    - py.test --cov-report term-missing --cov python-hosts
 after_success:
     coveralls
