@@ -54,7 +54,6 @@ class PyTest(testcommand):
 setup(
     name='python-hosts',
     version=version,
-    url='http://github.com/jonhadfield/python-hosts/',
     author='Jon Hadfield',
     author_email='jon.hadfield@lessknown.co.uk',
     url = 'https://github.com/jonhadfield/python-hosts',
