@@ -1,6 +1,6 @@
 hosts
 ========
-[![Build Status](https://api.travis-ci.org/jonhadfield/hosts.svg?branch=master)](https://travis-ci.org/jonhadfield/hosts)
+[![Build Status](https://api.travis-ci.org/jonhadfield/python-hosts.svg?branch=master)](https://travis-ci.org/jonhadfield/python-hosts)
 
 A library for managing a hosts file.
 
