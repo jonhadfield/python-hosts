@@ -1,11 +1,18 @@
 # -*- coding: utf-8 -*-
+"""
+This module contains utility functions used by the Hosts and HostsEntry methods
+"""
 import socket
 import re
 import os
 
 
 def is_ipv4(entry):
-    """ Checks if a string is a valid ipv4 address. """
+    """
+    Check if the string provided is a valid ipv4 address
+    :param entry: A string representation of an IP address
+    :return: True if valid, False if invalid
+    """
     try:
         if socket.inet_aton(entry):
             return True
@@ -14,7 +21,11 @@ def is_ipv4(entry):
 
 
 def is_ipv6(entry):
-    """ Checks if a string is a valid ipv6 address. """
+    """
+    Check if the string provided is a valid ipv6 address
+    :param entry: A string representation of an IP address
+    :return: True if valid, False if invalid
+    """
     try:
         if socket.inet_pton(socket.AF_INET6, entry):
             return True
@@ -23,7 +34,11 @@ def is_ipv6(entry):
 
 
 def valid_hostnames(hostname_list):
-    """ Checks if all provided hostnames are valid. """
+    """
+    Check if the supplied list of strings are valid hostnames
+    :param hostname_list: A list of strings
+    :return: True if the strings are valid hostnames, False if not
+    """
     for entry in hostname_list:
         if len(entry) > 255:
             return False
@@ -34,11 +49,21 @@ def valid_hostnames(hostname_list):
 
 
 def is_readable(path=None):
+    """
+    Test if the supplied filesystem path can be read
+    :param path: A filesystem path
+    :return: True if the path is a file that can be read. Otherwise, False
+    """
     if os.path.isfile(path) and os.access(path, os.R_OK):
         return True
     return False
 
 
 def is_writeable(path=None):
+    """
+    Test if the supplied filesystem path can be written to
+    :param path: A filesystem path
+    :return: True if the path is a file that can be written. Otherwise, False
+    """
     if os.path.isfile(path) and os.access(path, os.W_OK):
         return True
