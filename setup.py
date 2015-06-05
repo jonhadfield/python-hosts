@@ -2,7 +2,7 @@
 
 import os
 import sys
-from setuptools import setup
+from setuptools import setup, find_packages
 from setuptools.command.test import test as testcommand
 
 version = "0.2.0"
@@ -61,7 +61,7 @@ setup(
     install_requires=[],
     description='Manage a hosts file',
     long_description=long_description,
-    packages=['python-hosts'],
+    packages=find_packages(),
     platforms='any',
     license='MIT',
     classifiers=[
