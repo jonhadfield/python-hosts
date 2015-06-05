@@ -68,7 +68,7 @@ setup(
         'Programming Language :: Python',
         'Development Status :: 2 - Pre-Alpha',
         'Natural Language :: English',
-        'Environment :: console',
+        'Environment :: Console',
         'Intended Audience :: System Administrators',
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
