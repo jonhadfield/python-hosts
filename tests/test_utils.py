@@ -2,7 +2,7 @@
 import sys
 from os import path
 sys.path.insert(0, path.abspath(path.join(path.dirname(__file__), '..', 'python-hosts')))
-from utils import is_ipv4, is_ipv6, valid_hostnames
+from python_hosts.utils import is_ipv4, is_ipv6, valid_hostnames
 
 
 def test_ipv4_validation_success():
