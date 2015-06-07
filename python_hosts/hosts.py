@@ -90,20 +90,19 @@ class HostsEntry(object):
         :param entry: A line from the hosts file
         :return: An instance of HostsEntry
         """
-        if isinstance(entry, str):
-            line_parts = entry.strip().split()
-            if is_ipv4(line_parts[0]):
-                if valid_hostnames(line_parts[1:]):
-                    return HostsEntry(entry_type='ipv4',
-                                      address=line_parts[0],
-                                      names=line_parts[1:])
-            elif is_ipv6(line_parts[0]):
-                if valid_hostnames(line_parts[1:]):
-                    return HostsEntry(entry_type='ipv6',
-                                      address=line_parts[0],
-                                      names=line_parts[1:])
-            else:
-                return False
+        line_parts = entry.strip().split()
+        if is_ipv4(line_parts[0]):
+            if valid_hostnames(line_parts[1:]):
+                return HostsEntry(entry_type='ipv4',
+                                  address=line_parts[0],
+                                  names=line_parts[1:])
+        elif is_ipv6(line_parts[0]):
+            if valid_hostnames(line_parts[1:]):
+                return HostsEntry(entry_type='ipv6',
+                                  address=line_parts[0],
+                                  names=line_parts[1:])
+        else:
+            return False
 
 
 class Hosts(object):
@@ -233,7 +232,7 @@ class Hosts(object):
         :param url: The URL of where to download a hosts file
         :return: Counts reflecting the attempted additions
         """
-        file_contents = self.get_hosts_by_url(url=url)
+        file_contents = self.get_hosts_by_url(url=url).decode('utf-8')
         file_contents = file_contents.rstrip().replace('^M', '\n')
         file_contents = file_contents.rstrip().replace('\r\n', '\n')
         lines = file_contents.split('\n')
