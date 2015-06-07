@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import sys
 from os import path
-sys.path.insert(0, path.abspath(path.join(path.dirname(__file__), '..', 'python_hosts')))
+#sys.path.insert(0, path.abspath(path.join(path.dirname(__file__), '..', 'python_hosts')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from python_hosts import is_ipv4, is_ipv6, valid_hostnames
 
 
