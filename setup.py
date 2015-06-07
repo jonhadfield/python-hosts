@@ -57,7 +57,7 @@ setup(
     author='Jon Hadfield',
     author_email='jon.hadfield@lessknown.co.uk',
     url = 'https://github.com/jonhadfield/python-hosts',
-    download_url = 'https://github.com/jonhadfield/python-hosts/tarball/0.2.3',
+    download_url = 'https://github.com/jonhadfield/python-hosts/tarball/0.2.4',
     install_requires=[],
     description='A hosts file manager library written in python',
     long_description=long_description,
