@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
-import sys
 import os
 import datetime
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'python_hosts')))
 import pytest
-from hosts import Hosts, HostsEntry, exception
+from python_hosts import Hosts, HostsEntry, exception
 
 
 def test_import_from_url_counters_for_part_success(tmpdir):

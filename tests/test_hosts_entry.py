@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
-import sys
-import os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'python_hosts')))
-from hosts import HostsEntry
+from python_hosts import HostsEntry
 
 
 def test_create_ipv4_instance():

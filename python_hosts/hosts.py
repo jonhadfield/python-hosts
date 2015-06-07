@@ -10,11 +10,15 @@ HostsEntry: A representation of a hosts file entry, i.e. a line
             containing an IP address and name(s), a comment, or
             a blank line/line separator.
 """
+
 import sys
-import exception
-from utils import is_ipv4, is_ipv6, valid_hostnames, is_readable, is_writeable
-import urllib2
+try:
+    from urllib.request import urlopen
+except ImportError:
+    from urllib2 import urlopen
 import os
+from .utils import is_ipv4, is_ipv6, is_writeable, is_readable, valid_hostnames
+from .exception import InvalidIPv6Address, InvalidIPv4Address
 
 
 class HostsEntry(object):
@@ -47,13 +51,13 @@ class HostsEntry(object):
             if not all((address, names)):
                 raise Exception('Address and Name(s) must be specified.')
             if not is_ipv4(address):
-                raise exception.InvalidIPv4Address()
+                raise InvalidIPv4Address()
 
         if entry_type == 'ipv6':
             if not all((address, names)):
                 raise Exception('Address and Name(s) must be specified.')
             if not is_ipv6(address):
-                raise exception.InvalidIPv6Address()
+                raise InvalidIPv6Address()
 
         self.entry_type = entry_type
         self.address = address
@@ -185,7 +189,7 @@ class Hosts(object):
         :param url: The URL of the hosts file to download
         :return: The content of the passed URL
         """
-        response = urllib2.urlopen(url)
+        response = urlopen(url)
         return response.read()
 
     def exists(self, address=None, names=None):
