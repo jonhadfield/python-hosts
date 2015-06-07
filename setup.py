@@ -5,7 +5,7 @@ import sys
 from setuptools import setup, find_packages
 from setuptools.command.test import test as testcommand
 
-version = "0.2.4"
+version = "0.2.5"
 
 if sys.argv[-1] == 'publish':
     os.system('python setup.py sdist upload')
@@ -57,7 +57,7 @@ setup(
     author='Jon Hadfield',
     author_email='jon.hadfield@lessknown.co.uk',
     url = 'https://github.com/jonhadfield/python-hosts',
-    download_url = 'https://github.com/jonhadfield/python-hosts/tarball/0.2.4',
+    download_url = 'https://github.com/jonhadfield/python-hosts/tarball/0.2.5',
     install_requires=[],
     description='A hosts file manager library written in python',
     long_description=long_description,
