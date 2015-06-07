@@ -5,7 +5,7 @@ import sys
 from setuptools import setup, find_packages
 from setuptools.command.test import test as testcommand
 
-version = "0.2.3"
+version = "0.2.4"
 
 if sys.argv[-1] == 'publish':
     os.system('python setup.py sdist upload')
