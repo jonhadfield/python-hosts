@@ -134,8 +134,9 @@ class Hosts(object):
         if not platform:
             platform = sys.platform
         if platform.startswith('win'):
-            return r'c:\windows\system32\drivers\etc\hosts'
-        else: 
+            result = r"c:\windows\system32\drivers\etc\hosts"
+            return result
+        else:
             return '/etc/hosts'
 
     def write(self):
@@ -307,6 +308,7 @@ class Hosts(object):
         :param entries: A list of instances of HostsEntry
         :return: The counts of successes and failures
         """
+        # TODO: Refactor. Too nested.
         ipv4_count = 0
         ipv6_count = 0
         invalid_count = 0
@@ -409,5 +411,5 @@ class Hosts(object):
                                 address=chunked_entry[0].strip(),
                                 names=stripped_name_list))
         except IOError:
-                return {'result': 'failed',
-                        'message': 'Cannot read: {0}.'.format(self.hosts_path)}
+            return {'result': 'failed',
+                    'message': 'Cannot read: {0}.'.format(self.hosts_path)}
