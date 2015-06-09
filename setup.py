@@ -25,7 +25,7 @@ requirements = []
 long_description = readme + '\n\n' + history
 
 if sys.argv[-1] == 'readme':
-    print(long_description)
+    print long_description
     sys.exit()
 
 
@@ -57,7 +57,7 @@ setup(
     author='Jon Hadfield',
     author_email='jon.hadfield@lessknown.co.uk',
     url='https://github.com/jonhadfield/python-hosts',
-    download_url = 'https://github.com/jonhadfield/python-hosts/tarball/0.2.10',
+    download_url='https://github.com/jonhadfield/python-hosts/tarball/0.2.10',
     install_requires=[],
     description='A hosts file manager library written in python',
     long_description=long_description,
@@ -78,7 +78,7 @@ setup(
     keywords=(
         'hosts, python, network'
     ),
-    cmdclass = {'test': PyTest},
+    cmdclass={'test': PyTest},
     test_suite='tests',
     tests_require=['pytest']
 )
