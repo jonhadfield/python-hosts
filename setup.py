@@ -73,6 +73,5 @@ setup(
         'hosts, python, network'
     ),
     cmdclass={'test': PyTest},
-    test_suite='tests',
     tests_require=['pytest']
 )
