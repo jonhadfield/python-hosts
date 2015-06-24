@@ -4,7 +4,7 @@ import os
 import sys
 from setuptools import setup
 from setuptools.command.test import test as TestCommand
-version = "0.2.10"
+version = "0.2.11"
 
 if sys.argv[-1] == 'publish':
     os.system('python setup.py sdist upload')
@@ -51,7 +51,7 @@ setup(
     author='Jon Hadfield',
     author_email='jon.hadfield@lessknown.co.uk',
     url='https://github.com/jonhadfield/python-hosts',
-    download_url='https://github.com/jonhadfield/python-hosts/tarball/0.2.10',
+    download_url='https://github.com/jonhadfield/python-hosts/tarball/0.2.11',
     install_requires=[],
     description='A hosts file manager library written in python',
     long_description=long_description,
