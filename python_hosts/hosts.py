@@ -218,15 +218,16 @@ class Hosts(object):
         :param name: A host name
         :return: None
         """
-        to_remove = []
-        if address and name:
-            to_remove = [x for x in self.entries if x.address == address and name in x.names]
-        elif address:
-            to_remove = [x for x in self.entries if x.address == address]
-        elif name:
-            to_remove = [x for x in self.entries if name in x.names]
-        for item_to_remove in to_remove:
-            self.entries.remove(item_to_remove)
+        if self.entries:
+            to_remove = []
+            if address and name:
+                to_remove = [x for x in self.entries if x.address == address and name in x.names]
+            elif address:
+                to_remove = [x for x in self.entries if x.address == address]
+            elif name:
+                to_remove = [x for x in self.entries if x.names and name in x.names]
+            for item_to_remove in to_remove:
+                self.entries.remove(item_to_remove)
 
     def import_url(self, url=None):
         """
