@@ -150,10 +150,12 @@ class Hosts(object):
         ipv4_entries_written = 0
         ipv6_entries_written = 0
         filemode = None
-        if not os.path.exists(self.hosts_path):
-            filemode = 'a+'
         if os.path.exists(self.hosts_path) and is_writeable(self.hosts_path):
             filemode = 'w'
+        elif not os.path.exists(self.hosts_path):
+            filemode = 'a+'
+        else:
+            raise Exception('Unable to write to specified path.')
         with open(self.hosts_path, filemode) as hosts_file:
             for written_count, line in enumerate(self.entries):
                 if line.entry_type == 'comment':
