@@ -9,10 +9,9 @@ utils: Contains helper functions to check the available operations on a hosts
 exception: Contains the custom exceptions that are raised in the event
  of an error in processing a hosts file and its entries
 """
-from .hosts import Hosts, HostsEntry
-from .utils import is_readable, is_ipv4, is_ipv6, is_writeable, valid_hostnames
-from .exception import HostsException,\
-    HostsEntryException, \
-    InvalidIPv4Address, \
-    InvalidIPv6Address, \
-    InvalidComment
+from python_hosts.hosts import Hosts, HostsEntry
+from python_hosts.utils import (is_readable, is_ipv4, is_ipv6,
+                                is_writeable, valid_hostnames)
+from python_hosts.exception import (HostsException, HostsEntryException,
+                                    InvalidIPv4Address, InvalidIPv6Address,
+                                    InvalidComment)

@@ -42,7 +42,7 @@ def valid_hostnames(hostname_list):
     for entry in hostname_list:
         if len(entry) > 255:
             return False
-        allowed = re.compile("(?!-)[A-Z\d-]{1,63}(?<!-)$", re.IGNORECASE)
+        allowed = re.compile('(?!-)[A-Z\d-]{1,63}(?<!-)$', re.IGNORECASE)
         if not all(allowed.match(x) for x in entry.split(".")):
             return False
     return True

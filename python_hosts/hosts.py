@@ -17,8 +17,9 @@ try:
 except ImportError:
     from urllib2 import urlopen
 import os
-from .utils import is_ipv4, is_ipv6, is_writeable, is_readable, valid_hostnames
-from .exception import InvalidIPv6Address, InvalidIPv4Address
+from python_hosts.utils import (is_ipv4, is_ipv6, is_writeable,
+                                is_readable, valid_hostnames)
+from python_hosts.exception import InvalidIPv6Address, InvalidIPv4Address
 
 
 class HostsEntry(object):
