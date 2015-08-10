@@ -5,6 +5,11 @@ python-hosts
 This is a python library for managing a hosts file. 
 It enables you to add and remove entries, or import them from a file or URL.
 
+Documentation
+-------------
+The docs are hosted on RTD (Read The Docs) here:
+
+<http://python-hosts.readthedocs.org/en/latest/index.html>.
 
 Installation
 ------------
