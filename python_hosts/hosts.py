@@ -2,7 +2,6 @@
 """
 This module contains classes:
 
-
 Hosts:
 A representation of a hosts file, e.g. /etc/hosts and c:\\\windows\\\system32\\\drivers\\\etc\\\hosts for a linux or MS windows based machine respectively. Each entry being represented as an instance of the HostsEntry class.
 
@@ -221,11 +220,11 @@ class Hosts(object):
         if self.entries:
             to_remove = []
             if address and name:
-                to_remove = [x for x in self.entries if x.address == address and name in x.names]
+                to_remove = (x for x in self.entries if x.address == address and name in x.names)
             elif address:
-                to_remove = [x for x in self.entries if x.address == address]
+                to_remove = (x for x in self.entries if x.address == address)
             elif name:
-                to_remove = [x for x in self.entries if x.names and name in x.names]
+                to_remove = (x for x in self.entries if x.names and name in x.names)
             for item_to_remove in to_remove:
                 self.entries.remove(item_to_remove)
 
@@ -303,7 +302,7 @@ class Hosts(object):
         """
         seen = set()
         seen_add = seen.add
-        return [x for x in seq if not (x in seen or seen_add(x))]
+        return (x for x in seq if not (x in seen or seen_add(x)))
 
     def add(self, entries=None, force=False):
         """
