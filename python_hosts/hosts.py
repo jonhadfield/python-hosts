@@ -403,9 +403,7 @@ class Hosts(object):
                         self.entries.append(HostsEntry(entry_type="blank"))
                     elif entry_type == "ipv4" or entry_type == "ipv6":
                         chunked_entry = hosts_entry.split()
-                        stripped_name_list = []
-                        for name in chunked_entry[1:]:
-                            stripped_name_list.append(name.strip())
+                        stripped_name_list = [name.strip() for name in chunked_entry[1:]]
 
                         self.entries.append(
                             HostsEntry(
