@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
-"""
-This module contains classes:
+""" This module contains classes:
 
 Hosts:
-A representation of a hosts file, e.g. /etc/hosts and c:\\\windows\\\system32\\\drivers\\\etc\\\hosts for a linux or MS windows based machine respectively. Each entry being represented as an instance of the HostsEntry class.
+A representation of a hosts file, e.g. /etc/hosts and
+c:\\\windows\\\system32\\\drivers\\\etc\\\hosts for a linux or MS windows
+based machine respectively. Each entry being represented as an instance
+of the HostsEntry class.
 
 HostsEntry:
-A representation of a hosts file entry, i.e. a line containing an IP address and name(s), a comment, or a blank line/line separator.
+A representation of a hosts file entry, i.e. a line containing an IP address
+and name(s), a comment, or a blank line/line separator.
 """
 
 import sys
