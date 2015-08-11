@@ -17,10 +17,9 @@ try:
     from urllib.request import urlopen
 except ImportError:
     from urllib2 import urlopen
-import os
-from python_hosts.utils import (is_ipv4, is_ipv6, is_writeable,
-                                is_readable, valid_hostnames)
-from python_hosts.exception import InvalidIPv6Address, InvalidIPv4Address
+from python_hosts.utils import is_ipv4, is_ipv6, is_readable, valid_hostnames
+from python_hosts.exception import (InvalidIPv6Address, InvalidIPv4Address,
+                                    UnableToWriteHosts)
 
 
 class HostsEntry(object):
@@ -151,40 +150,36 @@ class Hosts(object):
         blanks_written = 0
         ipv4_entries_written = 0
         ipv6_entries_written = 0
-        filemode = None
-        if os.path.exists(self.hosts_path) and is_writeable(self.hosts_path):
-            filemode = 'w'
-        elif not os.path.exists(self.hosts_path):
-            filemode = 'a+'
-        else:
-            raise Exception('Unable to write to specified path.')
-        with open(self.hosts_path, filemode) as hosts_file:
-            for written_count, line in enumerate(self.entries):
-                if line.entry_type == 'comment':
-                    hosts_file.write(line.comment)
-                    comments_written += 1
-                if line.entry_type == 'blank':
-                    hosts_file.write("\n")
-                    blanks_written += 1
-                if line.entry_type == 'ipv4':
-                    hosts_file.write(
-                        "{0}\t{1}\n".format(
-                            line.address,
-                            ' '.join(line.names),
+        try:
+            with open(self.hosts_path, 'w') as hosts_file:
+                for written_count, line in enumerate(self.entries):
+                    if line.entry_type == 'comment':
+                        hosts_file.write(line.comment)
+                        comments_written += 1
+                    if line.entry_type == 'blank':
+                        hosts_file.write("\n")
+                        blanks_written += 1
+                    if line.entry_type == 'ipv4':
+                        hosts_file.write(
+                            "{0}\t{1}\n".format(
+                                line.address,
+                                ' '.join(line.names),
+                                )
                             )
-                        )
-                    ipv4_entries_written += 1
-                if line.entry_type == 'ipv6':
-                    hosts_file.write(
-                        "{0}\t{1}\n".format(
-                            line.address,
-                            ' '.join(line.names),))
-                    ipv6_entries_written += 1
-            return {'total_written': written_count+1,
-                    'comments_written': comments_written,
-                    'blanks_written': blanks_written,
-                    'ipv4_entries_written': ipv4_entries_written,
-                    'ipv6_entries_written': ipv6_entries_written}
+                        ipv4_entries_written += 1
+                    if line.entry_type == 'ipv6':
+                        hosts_file.write(
+                            "{0}\t{1}\n".format(
+                                line.address,
+                                ' '.join(line.names),))
+                        ipv6_entries_written += 1
+        except:
+            raise UnableToWriteHosts
+        return {'total_written': written_count+1,
+                'comments_written': comments_written,
+                'blanks_written': blanks_written,
+                'ipv4_entries_written': ipv4_entries_written,
+                'ipv6_entries_written': ipv6_entries_written}
 
     @staticmethod
     def get_hosts_by_url(url=None):
