@@ -298,7 +298,6 @@ class Hosts(object):
         :param entries: A list of instances of HostsEntry
         :return: The counts of successes and failures
         """
-        # TODO: Refactor. Too nested.
         ipv4_count = 0
         ipv6_count = 0
         invalid_count = 0
@@ -313,7 +312,7 @@ class Hosts(object):
         existing_names = dedupe_list(existing_names)
         for entry in entries:
             if entry.address in ('0.0.0.0', '127.0.0.1'):
-                if set(entry.names).issubset(set(existing_names)):
+                if set(entry.names).intersection(existing_names):
                     if force:
                         self.remove_all_matching(name=entry.names)
                         import_entries.append(entry)
@@ -328,21 +327,15 @@ class Hosts(object):
                     self.remove_all_matching(address=entry.address)
                     replaced_count += 1
                     import_entries.append(entry)
-            else:
-                for name in entry.names:
-                    for sublist in existing_names:
-                        if name in sublist:
-                            if not force:
-                                duplicate_count += 1
-                                break
-                            else:
-                                self.remove_all_matching(name=name)
-                                replaced_count += 1
-                                import_entries.append(entry)
-                                break
+            elif set(entry.names).intersection(existing_names):
+                    if not force:
+                        duplicate_count += 1
                     else:
+                        self.remove_all_matching(name=entry.names)
+                        replaced_count += 1
                         import_entries.append(entry)
-                        break
+            else:
+                import_entries.append(entry)
 
         for item in import_entries:
             if item.entry_type == 'ipv4':

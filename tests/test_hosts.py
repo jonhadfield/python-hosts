@@ -7,20 +7,6 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from python_hosts import Hosts, HostsEntry, exception
 
 
-def test_exception_raised_when_unable_to_write_hosts(tmpdir):
-    """ Test that the correct exception is raised when a hosts file
-    is not writeable.
-    """
-    hosts_file = tmpdir.mkdir("etc").join("hosts")
-    hosts_file.write("127.0.0.1\tlocalhost\n")
-    hosts = Hosts(path=hosts_file.strpath)
-    os.chmod(hosts_file.strpath, 0444)
-    new_entry = HostsEntry(entry_type='ipv4', address='123.123.123.123', names=['test.example.com'])
-    hosts.add(entries=[new_entry])
-    with pytest.raises(exception.UnableToWriteHosts):
-        hosts.write()
-
-
 def test_import_from_url_counters_for_part_success(tmpdir):
     """
     Test that correct counters are returned when there is at least a
@@ -39,6 +25,20 @@ def test_import_from_url_counters_for_part_success(tmpdir):
     write_result = result.get('write_result')
     assert add_result.get('ipv4_count') == 4
     assert write_result.get('total_written') == 5
+
+
+def test_exception_raised_when_unable_to_write_hosts(tmpdir):
+    """ Test that the correct exception is raised when a hosts file
+    is not writeable.
+    """
+    hosts_file = tmpdir.mkdir("etc").join("hosts")
+    hosts_file.write("127.0.0.1\tlocalhost\n")
+    hosts = Hosts(path=hosts_file.strpath)
+    os.chmod(hosts_file.strpath, 0444)
+    new_entry = HostsEntry(entry_type='ipv4', address='123.123.123.123', names=['test.example.com'])
+    hosts.add(entries=[new_entry])
+    with pytest.raises(exception.UnableToWriteHosts):
+        hosts.write()
 
 
 def test_write_will_create_path_if_missing():
