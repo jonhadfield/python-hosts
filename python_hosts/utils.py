@@ -57,3 +57,13 @@ def is_readable(path=None):
     if os.path.isfile(path) and os.access(path, os.R_OK):
         return True
     return False
+
+
+def dedupe_list(seq):
+    """
+    Utility function to remove duplicates from a list
+    :param seq: The sequence (list) to deduplicate
+    :return: A list with original duplicates removed
+    """
+    seen = set()
+    return [x for x in seq if not (x in seen or seen.add(x))]

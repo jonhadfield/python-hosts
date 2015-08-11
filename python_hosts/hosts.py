@@ -17,7 +17,8 @@ try:
     from urllib.request import urlopen
 except ImportError:
     from urllib2 import urlopen
-from python_hosts.utils import is_ipv4, is_ipv6, is_readable, valid_hostnames
+from python_hosts.utils import (is_ipv4, is_ipv6, is_readable, valid_hostnames,
+                                dedupe_list)
 from python_hosts.exception import (InvalidIPv6Address, InvalidIPv4Address,
                                     UnableToWriteHosts)
 
@@ -291,16 +292,6 @@ class Hosts(object):
             return {'result': 'failed',
                     'message': 'Cannot read: file {0}.'.format(import_file_path)}
 
-    @staticmethod
-    def dedupe_list(seq):
-        """
-        Utility function to remove duplicates from a list
-        :param seq: The sequence (list) to deduplicate
-        :return: A list with original duplicates removed
-        """
-        seen = set()
-        return [x for x in seq if not (x in seen or seen.add(x))]
-
     def add(self, entries=None, force=False):
         """
         Add instances of HostsEntry to the instance of Hosts.
@@ -319,33 +310,20 @@ class Hosts(object):
         for item in self.entries:
             if item.names:
                 existing_names.extend(item.names)
-        existing_names = self.dedupe_list(existing_names)
+        existing_names = dedupe_list(existing_names)
         for entry in entries:
             if entry.address in ('0.0.0.0', '127.0.0.1'):
-                if len(entry.names) > 1:
-                    found_name = False
-                    for name in entry.names:
-                        if name in existing_names:
-                            if force:
-                                self.remove_all_matching(name=name)
-                                import_entries.append(entry)
-                                found_name = True
-                                break
-                            else:
-                                duplicate_count += 1
-                                found_name = True
-                                break
-                    if found_name:
-                        break
-                    import_entries.append(entry)
-                elif entry.names[0] in existing_names:
-                    duplicate_count += 1
+                if set(entry.names).issubset(set(existing_names)):
+                    if force:
+                        self.remove_all_matching(name=entry.names)
+                        import_entries.append(entry)
+                    else:
+                        duplicate_count += 1
                 else:
                     import_entries.append(entry)
             elif entry.address in existing_addresses:
                 if not force:
                     duplicate_count += 1
-                    continue
                 elif force:
                     self.remove_all_matching(address=entry.address)
                     replaced_count += 1
