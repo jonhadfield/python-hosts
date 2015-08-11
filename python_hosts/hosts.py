@@ -299,7 +299,7 @@ class Hosts(object):
         :return: A list with original duplicates removed
         """
         seen = set()
-        return (x for x in seq if not (x in seen or seen.add(x)))
+        return [x for x in seq if not (x in seen or seen.add(x))]
 
     def add(self, entries=None, force=False):
         """
@@ -317,11 +317,8 @@ class Hosts(object):
         existing_addresses = [x.address for x in self.entries if x.address]
         existing_names = []
         for item in self.entries:
-            if item.names and len(item.names) > 1:
-                for name in item.names:
-                    existing_names.append(name)
-            elif item.names:
-                existing_names.append(item.names[0])
+            if item.names:
+                existing_names.extend(item.names)
         existing_names = self.dedupe_list(existing_names)
         for entry in entries:
             if entry.address in ('0.0.0.0', '127.0.0.1'):
