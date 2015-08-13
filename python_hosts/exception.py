@@ -14,9 +14,11 @@ class HostsException(Exception):
     """
     pass
 
+
 class UnableToWriteHosts(HostsException):
     """ Raised when a Hosts file cannot be written. """
     pass
+
 
 class HostsEntryException(Exception):
     """ Base exception class. All HostsEntry-specific exceptions should
