@@ -8,6 +8,8 @@ from python_hosts import Hosts, HostsEntry, exception
 
 
 def test_hosts_str(tmpdir):
+    """ Test that the str method returns an accurate, user readable output
+    """
     hosts_file = tmpdir.mkdir("etc").join("hosts")
     hosts_file.write("6.6.6.6\texample.com\n")
     hosts = Hosts(path=hosts_file.strpath)
@@ -15,6 +17,8 @@ def test_hosts_str(tmpdir):
 
 
 def test_hosts_repr(tmpdir):
+    """ Test that the repr method returns a useful representation of the hosts object
+    """
     hosts_file = tmpdir.mkdir("etc").join("hosts")
     hosts_file.write("6.6.6.6\texample.com\n")
     hosts = Hosts(path=hosts_file.strpath)
