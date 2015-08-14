@@ -1,19 +1,17 @@
 # -*- coding: utf-8 -*-
 """ This module contains classes:
+HostsEntry:
+A representation of a hosts file entry, i.e. a line containing an IP address
+and name(s), a comment, or a blank line/line separator.
 
 Hosts:
 A representation of a hosts file, e.g. /etc/hosts and
 c:\\\windows\\\system32\\\drivers\\\etc\\\hosts for a linux or MS windows
 based machine respectively. Each entry being represented as an instance
 of the HostsEntry class.
-
-HostsEntry:
-A representation of a hosts file entry, i.e. a line containing an IP address
-and name(s), a comment, or a blank line/line separator.
 """
 
 import sys
-import os
 try:
     from urllib.request import urlopen
 except ImportError:
@@ -68,20 +66,20 @@ class HostsEntry(object):
         self.names = names
 
     def __repr__(self):
-        return "HostsEntry(entry_type=%r, address=%r, comment=%r, name=%r)" % (self.entry_type,
-                                                                               self.address,
-                                                                               self.comment,
-                                                                               self.names)
+        return "HostsEntry(entry_type=%r, address=%r, comment=%r, names=%r)" % (self.entry_type,
+                                                                                self.address,
+                                                                                self.comment,
+                                                                                self.names)
 
     def __str__(self):
         if self.entry_type in ('ipv4', 'ipv6'):
             return "TYPE={0}, ADDR={1}, NAMES={2}".format(self.entry_type,
-                                                                self.address,
-                                                                " ".join(self.names))+os.linesep
+                                                          self.address,
+                                                          " ".join(self.names))
         elif self.entry_type == 'comment':
-            return "TYPE = {0}, COMMENT = {1}".format(self.entry_type, self.comment)+os.linesep
+            return "TYPE = {0}, COMMENT = {1}".format(self.entry_type, self.comment)
         elif self.entry_type == 'blank':
-            return "TYPE = {0}".format(self.entry_type)+os.linesep
+            return "TYPE = {0}".format(self.entry_type)
 
     @staticmethod
     def get_entry_type(hosts_entry=None):
@@ -146,7 +144,7 @@ class Hosts(object):
         return 'Hosts(hosts_path=%r, entries=%r)' % (self.hosts_path, self.entries)
 
     def __str__(self):
-        output = ('hosts_path={0}'.format(self.hosts_path)+os.linesep)
+        output = ('hosts_path={0}'.format(self.hosts_path))
         for entry in self.entries:
             output += str(entry)
         return output
