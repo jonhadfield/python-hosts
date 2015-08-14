@@ -53,13 +53,3 @@ def test_hostentry_comment_str():
 def test_hostentry_blank_str():
     an_entry = HostsEntry(entry_type='blank', address=None, comment=None, names=None)
     assert(str(an_entry)) == "TYPE = blank"
-
- #  def __str__(self):
- #       if self.entry_type in ('ipv4', 'ipv6'):
- #           return "TYPE={0}, ADDR={1}, NAMES={2}".format(self.entry_type,
- #                                                         self.address,
- #                                                         " ".join(self.names))
- #       elif self.entry_type == 'comment':
- #           return "TYPE = {0}, COMMENT = {1}".format(self.entry_type, self.comment)
- #       elif self.entry_type == 'blank':
- #           return "TYPE = {0}".format(self.entry_type)
