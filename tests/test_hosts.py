@@ -7,6 +7,24 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from python_hosts import Hosts, HostsEntry, exception
 
 
+def test_hosts_str(tmpdir):
+    hosts_file = tmpdir.mkdir("etc").join("hosts")
+    hosts_file.write("6.6.6.6\texample.com\n")
+    hosts = Hosts(path=hosts_file.strpath)
+    assert(str(hosts)) == "hosts_path={0}, TYPE=ipv4, ADDR=6.6.6.6, NAMES=example.com".format(hosts_file.strpath)
+
+
+def test_hosts_repr(tmpdir):
+    hosts_file = tmpdir.mkdir("etc").join("hosts")
+    hosts_file.write("6.6.6.6\texample.com\n")
+    hosts = Hosts(path=hosts_file.strpath)
+    assert(repr(hosts)) == "Hosts(hosts_path='{0}', " \
+                           "entries=[HostsEntry(entry_type='ipv4', " \
+                           "address='6.6.6.6', " \
+                           "comment=None, " \
+                           "names=['example.com'])])".format(hosts_file.strpath)
+
+
 def test_import_from_url_counters_for_part_success(tmpdir):
     """
     Test that correct counters are returned when there is at least a

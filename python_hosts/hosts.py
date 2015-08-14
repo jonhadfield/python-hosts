@@ -144,7 +144,7 @@ class Hosts(object):
         return 'Hosts(hosts_path=%r, entries=%r)' % (self.hosts_path, self.entries)
 
     def __str__(self):
-        output = ('hosts_path={0}'.format(self.hosts_path))
+        output = ('hosts_path={0}, '.format(self.hosts_path))
         for entry in self.entries:
             output += str(entry)
         return output
