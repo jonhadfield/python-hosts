@@ -24,7 +24,7 @@ requirements = []
 long_description = readme + '\n\n' + history
 
 if sys.argv[-1] == 'readme':
-    print long_description
+    print(long_description)
     sys.exit()
 
 
