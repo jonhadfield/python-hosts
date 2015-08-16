@@ -149,6 +149,12 @@ class Hosts(object):
             output += str(entry)
         return output
 
+    def count(self):
+        """ Get a count of the number of host entries
+        :return: The number of host entries
+        """
+        return len(self.entries)
+
     @staticmethod
     def determine_hosts_path(platform=None):
         """
