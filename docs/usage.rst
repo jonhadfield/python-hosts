@@ -16,7 +16,7 @@ Usage
 
 **Remove an entry/entries matching an address**::
 
- my_hosts.remove_all_matching(names='example.com')
+ my_hosts.remove_all_matching(name='example.com')
 
 **Write entries**::
 
