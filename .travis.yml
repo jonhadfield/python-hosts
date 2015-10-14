@@ -1,11 +1,14 @@
 language: python
 python:
-    - "2.7"
+  - "3.5"
+  - "3.4"
+  - "3.3"
+  - "2.7"
+  - "pypy"
 before_install:
-    - pip install pytest pytest-cov
-    - pip install coveralls
+  - pip install pytest pytest-cov
+  - pip install coveralls
 script:
-    #- py.test
-    - py.test --cov-report term-missing --cov python_hosts
+  - py.test --cov-report term-missing --cov python_hosts
 after_success:
-    coveralls
+  coveralls
