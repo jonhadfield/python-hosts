@@ -56,7 +56,7 @@ def test_exception_raised_when_unable_to_write_hosts(tmpdir):
     hosts_file = tmpdir.mkdir("etc").join("hosts")
     hosts_file.write("127.0.0.1\tlocalhost\n")
     hosts = Hosts(path=hosts_file.strpath)
-    mode = 0440
+    mode = int('0440', 8)
     if sys.version_info[0] == 3:
         mode = '0o440'
     os.chmod(hosts_file.strpath, mode)
