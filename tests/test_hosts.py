@@ -56,7 +56,7 @@ def test_exception_raised_when_unable_to_write_hosts(tmpdir):
     hosts_file = tmpdir.mkdir("etc").join("hosts")
     hosts_file.write("127.0.0.1\tlocalhost\n")
     hosts = Hosts(path=hosts_file.strpath)
-    os.chmod(hosts_file.strpath, 0444)
+    os.chmod(hosts_file.strpath, 0o444)
     new_entry = HostsEntry(entry_type='ipv4', address='123.123.123.123', names=['test.example.com'])
     hosts.add(entries=[new_entry])
     with pytest.raises(exception.UnableToWriteHosts):
