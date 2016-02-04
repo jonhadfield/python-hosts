@@ -247,15 +247,15 @@ class Hosts(object):
         :return: None
         """
         if self.entries:
-            to_remove = []
             if address and name:
-                to_remove = (x for x in self.entries if x.address == address and name in x.names)
+                to_remove = lambda x: x.address == address and name in x.names
             elif address:
-                to_remove = (x for x in self.entries if x.address == address)
+                to_remove = lambda x: x.address == address
             elif name:
-                to_remove = (x for x in self.entries if x.names and name in x.names)
-            for item_to_remove in to_remove:
-                self.entries.remove(item_to_remove)
+                to_remove = lambda x: x.names and name in x.names
+            else:
+                return
+            self.entries = [x for x in self.entries if not to_remove(x)]
 
     def import_url(self, url=None):
         """

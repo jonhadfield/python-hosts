@@ -1,6 +1,10 @@
 Changelog
 ========
 
+0.3.3
+
+- Fix but in `remove_all_matching()` which could cause entries to be skipped
+
 0.3.1
 
 - Add repr and str for each class
