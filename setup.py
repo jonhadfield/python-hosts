@@ -4,7 +4,7 @@ import os
 import sys
 from setuptools import setup
 from setuptools.command.test import test as TestCommand
-version = "0.3.2"
+version = "0.3.3"
 
 if sys.argv[-1] == 'publish':
     os.system('python setup.py sdist upload')
@@ -49,7 +49,7 @@ setup(
     name='python-hosts',
     version=version,
     author='Jon Hadfield',
-    author_email='jon.hadfield@lessknown.co.uk',
+    author_email='jon@lessknown.co.uk',
     url='https://github.com/jonhadfield/python-hosts',
     download_url='https://github.com/jonhadfield/python-hosts/tarball/{0}'.format(version),
     install_requires=[],
