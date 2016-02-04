@@ -471,10 +471,13 @@ def test_file_import_fails_when_not_readable(tmpdir):
 
 
 def test_remove_all_matching_multiple(tmpdir):
+    """ 
+    Test removal of multiple entries with a common alias
+    """
     hosts_file = tmpdir.mkdir("etc").join("hosts")
     hosts_file.write("1.2.3.4\tfoo-1 foo\n"
                      "2.3.4.5\tfoo-2 foo\n")
     hosts = Hosts(path=hosts_file.strpath)
     hosts.remove_all_matching(name="foo")
     hosts.write()
-    assert hosts_file.read() == ""
+    assert not hosts_file.read()
