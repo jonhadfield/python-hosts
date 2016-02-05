@@ -109,8 +109,7 @@ class HostsEntry(object):
         :return: An instance of HostsEntry
         """
         line_parts = entry.strip().split()
-        if is_ipv4(line_parts[0]):
-            if valid_hostnames(line_parts[1:]):
+        if is_ipv4(line_parts[0]) and valid_hostnames(line_parts[1:]):
                 return HostsEntry(entry_type='ipv4',
                                   address=line_parts[0],
                                   names=line_parts[1:])
