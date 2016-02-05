@@ -66,10 +66,11 @@ class HostsEntry(object):
         self.names = names
 
     def __repr__(self):
-        return "HostsEntry(entry_type=%r, address=%r, comment=%r, names=%r)" % (self.entry_type,
-                                                                                self.address,
-                                                                                self.comment,
-                                                                                self.names)
+        return "HostsEntry(entry_type=\'{0}\', address=\'{1}\', " \
+               "comment={2}, names={3})".format(self.entry_type,
+                                                self.address,
+                                                self.comment,
+                                                self.names)
 
     def __str__(self):
         if self.entry_type in ('ipv4', 'ipv6'):
@@ -248,14 +249,15 @@ class Hosts(object):
         """
         if self.entries:
             if address and name:
-                to_remove = lambda x: x.address == address and name in x.names
+                self.entries = [x for x in self.entries if not (lambda y: y.address == address and name in y.names(x))]
             elif address:
-                to_remove = lambda x: x.address == address
+                self.entries = [x for x in self.entries if not (lambda y: y.address == address)]
             elif name:
-                to_remove = lambda x: x.names and name in x.names
-            else:
-                return
-            self.entries = [x for x in self.entries if not to_remove(x)]
+                self.entries = [x for x in self.entries if not (lambda y: y.address and name in y.names(x))]
+
+            #else:
+            #    return
+            #self.entries = [x for x in self.entries if not to_remove(x)]
 
     def import_url(self, url=None):
         """
@@ -326,6 +328,7 @@ class Hosts(object):
         """
         Add instances of HostsEntry to the instance of Hosts.
         :param entries: A list of instances of HostsEntry
+        :param force: Remove matching before adding
         :return: The counts of successes and failures
         """
         ipv4_count = 0
