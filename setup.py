@@ -21,7 +21,7 @@ history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 
 requirements = []
 
-long_description = readme + '\n\n' + history
+long_description = '{0}\n\n{1}'.format(readme, history)
 
 if sys.argv[-1] == 'readme':
     print(long_description)
