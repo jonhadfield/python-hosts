@@ -113,8 +113,7 @@ class HostsEntry(object):
                 return HostsEntry(entry_type='ipv4',
                                   address=line_parts[0],
                                   names=line_parts[1:])
-        elif is_ipv6(line_parts[0]):
-            if valid_hostnames(line_parts[1:]):
+        elif is_ipv6(line_parts[0]) and valid_hostnames(line_parts[1:]):
                 return HostsEntry(entry_type='ipv6',
                                   address=line_parts[0],
                                   names=line_parts[1:])
