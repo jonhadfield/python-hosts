@@ -142,7 +142,7 @@ class Hosts(object):
         self.populate_entries()
 
     def __repr__(self):
-        return 'Hosts(hosts_path=%r, entries=%r)' % (self.hosts_path, self.entries)
+        return 'Hosts(hosts_path=\'{0}\', entries={1})'.format(self.hosts_path, self.entries)
 
     def __str__(self):
         output = ('hosts_path={0}, '.format(self.hosts_path))
@@ -254,10 +254,6 @@ class Hosts(object):
                 self.entries = [x for x in self.entries if not (lambda y: y.address == address)]
             elif name:
                 self.entries = [x for x in self.entries if not (lambda y: y.address and name in y.names(x))]
-
-            #else:
-            #    return
-            #self.entries = [x for x in self.entries if not to_remove(x)]
 
     def import_url(self, url=None):
         """
@@ -399,7 +395,7 @@ class Hosts(object):
                                                        comment=hosts_entry))
                     elif entry_type == "blank":
                         self.entries.append(HostsEntry(entry_type="blank"))
-                    elif entry_type == "ipv4" or entry_type == "ipv6":
+                    elif entry_type in ("ipv4", "ipv6"):
                         chunked_entry = hosts_entry.split()
                         stripped_name_list = [name.strip() for name in chunked_entry[1:]]
 
