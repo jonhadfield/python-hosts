@@ -56,10 +56,7 @@ def test_exception_raised_when_unable_to_write_hosts(tmpdir):
     hosts_file = tmpdir.mkdir("etc").join("hosts")
     hosts_file.write("127.0.0.1\tlocalhost\n")
     hosts = Hosts(path=hosts_file.strpath)
-    mode = int('0440', 8)
-    # if sys.version_info[0] == 3:
-    #    mode = 0o440
-    os.chmod(hosts_file.strpath, mode)
+    os.chmod(hosts_file.strpath, 0o444)
     new_entry = HostsEntry(entry_type='ipv4', address='123.123.123.123', names=['test.example.com'])
     hosts.add(entries=[new_entry])
     with pytest.raises(exception.UnableToWriteHosts):
@@ -471,3 +468,16 @@ def test_file_import_fails_when_not_readable(tmpdir):
     hosts_entries = Hosts(path=hosts_file.strpath)
     result = hosts_entries.import_file('/invalid_file')
     assert result.get('result') == 'failed'
+
+
+def test_remove_all_matching_multiple(tmpdir):
+    """ 
+    Test removal of multiple entries with a common alias
+    """
+    hosts_file = tmpdir.mkdir("etc").join("hosts")
+    hosts_file.write("1.2.3.4\tfoo-1 foo\n"
+                     "2.3.4.5\tfoo-2 foo\n")
+    hosts = Hosts(path=hosts_file.strpath)
+    hosts.remove_all_matching(name="foo")
+    hosts.write()
+    assert not hosts_file.read()

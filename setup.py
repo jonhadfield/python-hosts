@@ -4,7 +4,7 @@ import os
 import sys
 from setuptools import setup
 from setuptools.command.test import test as TestCommand
-version = "0.3.2"
+version = "0.3.3"
 
 if sys.argv[-1] == 'publish':
     os.system('python setup.py sdist upload')
@@ -12,7 +12,7 @@ if sys.argv[-1] == 'publish':
     sys.exit()
 
 if sys.argv[-1] == 'tag':
-    os.system("git tag -a %s -m 'version %s'" % (version, version))
+    os.system("git tag -a {0} -m 'version {1}'".format(version, version))
     os.system("git push --tags")
     sys.exit()
 
@@ -21,7 +21,7 @@ history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 
 requirements = []
 
-long_description = readme + '\n\n' + history
+long_description = '{0}\n\n{1}'.format(readme, history)
 
 if sys.argv[-1] == 'readme':
     print(long_description)
@@ -49,7 +49,7 @@ setup(
     name='python-hosts',
     version=version,
     author='Jon Hadfield',
-    author_email='jon.hadfield@lessknown.co.uk',
+    author_email='jon@lessknown.co.uk',
     url='https://github.com/jonhadfield/python-hosts',
     download_url='https://github.com/jonhadfield/python-hosts/tarball/{0}'.format(version),
     install_requires=[],
