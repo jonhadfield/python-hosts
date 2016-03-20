@@ -12,6 +12,7 @@ of the HostsEntry class.
 """
 
 import sys
+
 try:
     from urllib.request import urlopen
 except ImportError:
@@ -110,13 +111,13 @@ class HostsEntry(object):
         """
         line_parts = entry.strip().split()
         if is_ipv4(line_parts[0]) and valid_hostnames(line_parts[1:]):
-                return HostsEntry(entry_type='ipv4',
-                                  address=line_parts[0],
-                                  names=line_parts[1:])
+            return HostsEntry(entry_type='ipv4',
+                              address=line_parts[0],
+                              names=line_parts[1:])
         elif is_ipv6(line_parts[0]) and valid_hostnames(line_parts[1:]):
-                return HostsEntry(entry_type='ipv6',
-                                  address=line_parts[0],
-                                  names=line_parts[1:])
+            return HostsEntry(entry_type='ipv6',
+                              address=line_parts[0],
+                              names=line_parts[1:])
         else:
             return False
 
@@ -194,18 +195,18 @@ class Hosts(object):
                             "{0}\t{1}\n".format(
                                 line.address,
                                 ' '.join(line.names),
-                                )
                             )
+                        )
                         ipv4_entries_written += 1
                     if line.entry_type == 'ipv6':
                         hosts_file.write(
                             "{0}\t{1}\n".format(
                                 line.address,
-                                ' '.join(line.names),))
+                                ' '.join(line.names), ))
                         ipv6_entries_written += 1
         except:
             raise UnableToWriteHosts
-        return {'total_written': written_count+1,
+        return {'total_written': written_count + 1,
                 'comments_written': comments_written,
                 'blanks_written': blanks_written,
                 'ipv4_entries_written': ipv4_entries_written,
@@ -355,12 +356,12 @@ class Hosts(object):
                     replaced_count += 1
                     import_entries.append(entry)
             elif set(entry.names).intersection(existing_names):
-                    if not force:
-                        duplicate_count += 1
-                    else:
-                        self.remove_all_matching(name=entry.names)
-                        replaced_count += 1
-                        import_entries.append(entry)
+                if not force:
+                    duplicate_count += 1
+                else:
+                    self.remove_all_matching(name=entry.names)
+                    replaced_count += 1
+                    import_entries.append(entry)
             else:
                 import_entries.append(entry)
 
