@@ -15,7 +15,7 @@ import sys
 
 try:
     from urllib.request import urlopen
-except ImportError:
+except ImportError:  # pragma: no cover
     from urllib2 import urlopen
 from python_hosts.utils import (is_ipv4, is_ipv6, is_readable, valid_hostnames,
                                 dedupe_list)

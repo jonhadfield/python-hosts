@@ -402,7 +402,7 @@ def test_no_entries_if_hosts_path_does_not_exist():
     Test that no entries are returned if the hosts path is invalid
     """
     hosts = Hosts(path="invalid")
-    assert len(hosts.entries) == 0
+    assert hosts.count() == 0
 
 
 def test_line_break_identified_as_blank(tmpdir):

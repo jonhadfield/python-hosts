@@ -74,6 +74,7 @@ setup(
     ),
     cmdclass={'test': PyTest},
     tests_require=['pytest>=2.8.2',
-                   'pytest-cov>=2.2.0']
+                   'pytest-cov>=2.2.0',
+                   'hypothesis']
                    
 )
