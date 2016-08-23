@@ -205,7 +205,7 @@ class Hosts(object):
                                 ' '.join(line.names), ))
                         ipv6_entries_written += 1
         except:
-            raise UnableToWriteHosts
+            raise UnableToWriteHosts()
         return {'total_written': written_count + 1,
                 'comments_written': comments_written,
                 'blanks_written': blanks_written,
