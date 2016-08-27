@@ -2,8 +2,8 @@
 language: python
 
 #set language version. This is only required if you use the default Shippable image for your build
-python:
-    - 2.7
+#python:
+#    - 2.7
 
 #specify which services you need. This is only valid if you use the default Shippable image for your build
 services:
