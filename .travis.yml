@@ -1,14 +1,19 @@
+sudo: required
+dist: precise
 language: python
 python:
   - "3.5"
   - "3.4"
   - "3.3"
   - "2.7"
+  - "2.6"
   - "pypy"
-before_install:
-  - pip install pytest pytest-cov
+  - "pypy3"
+  - "nightly"
+install:
   - pip install coveralls
+  - pip install tox-travis
 script:
-  - py.test --cov-report term-missing --cov python_hosts
+  - tox
 after_success:
-  coveralls
+  - coveralls
