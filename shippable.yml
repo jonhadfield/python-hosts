@@ -17,5 +17,3 @@ install:
   - pip install tox-travis
 script:
   - tox
-after_success:
-  - coveralls

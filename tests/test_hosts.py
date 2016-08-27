@@ -1,10 +1,17 @@
 # -*- coding: utf-8 -*-
 import datetime
-import sys
 import os
+import pwd
+import sys
+
 import pytest
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from python_hosts import Hosts, HostsEntry, exception
+
+
+def get_username():
+    return pwd.getpwuid(os.getuid())[0]
 
 
 def test_hosts_str(tmpdir):
@@ -13,7 +20,7 @@ def test_hosts_str(tmpdir):
     hosts_file = tmpdir.mkdir("etc").join("hosts")
     hosts_file.write("6.6.6.6\texample.com\n")
     hosts = Hosts(path=hosts_file.strpath)
-    assert(str(hosts)) == "hosts_path={0}, TYPE=ipv4, ADDR=6.6.6.6, NAMES=example.com".format(hosts_file.strpath)
+    assert (str(hosts)) == "hosts_path={0}, TYPE=ipv4, ADDR=6.6.6.6, NAMES=example.com".format(hosts_file.strpath)
 
 
 def test_hosts_repr(tmpdir):
@@ -22,11 +29,11 @@ def test_hosts_repr(tmpdir):
     hosts_file = tmpdir.mkdir("etc").join("hosts")
     hosts_file.write("6.6.6.6\texample.com\n")
     hosts = Hosts(path=hosts_file.strpath)
-    assert(repr(hosts)) == "Hosts(hosts_path='{0}', " \
-                           "entries=[HostsEntry(entry_type='ipv4', " \
-                           "address='6.6.6.6', " \
-                           "comment=None, " \
-                           "names=['example.com'])])".format(hosts_file.strpath)
+    assert (repr(hosts)) == "Hosts(hosts_path='{0}', " \
+                            "entries=[HostsEntry(entry_type='ipv4', " \
+                            "address='6.6.6.6', " \
+                            "comment=None, " \
+                            "names=['example.com'])])".format(hosts_file.strpath)
 
 
 def test_import_from_url_counters_for_part_success(tmpdir):
@@ -53,14 +60,15 @@ def test_exception_raised_when_unable_to_write_hosts(tmpdir):
     """ Test that the correct exception is raised when a hosts file
     is not writeable.
     """
-    hosts_file = tmpdir.mkdir("etc").join("hosts")
-    hosts_file.write("127.0.0.1\tlocalhost\n")
-    hosts = Hosts(path=hosts_file.strpath)
-    os.chmod(hosts_file.strpath, 0o444)
-    new_entry = HostsEntry(entry_type='ipv4', address='123.123.123.123', names=['test.example.com'])
-    hosts.add(entries=[new_entry])
-    with pytest.raises(exception.UnableToWriteHosts):
-        hosts.write()
+    if get_username() != 'root':
+        hosts_file = tmpdir.mkdir("etc").join("hosts")
+        hosts_file.write("127.0.0.1\tlocalhost\n")
+        hosts = Hosts(path=hosts_file.strpath)
+        os.chmod(hosts_file.strpath, 0o444)
+        new_entry = HostsEntry(entry_type='ipv4', address='123.123.123.123', names=['test.example.com'])
+        hosts.add(entries=[new_entry])
+        with pytest.raises(exception.UnableToWriteHosts):
+            hosts.write()
 
 
 def test_write_will_create_path_if_missing():
@@ -402,7 +410,7 @@ def test_no_entries_if_hosts_path_does_not_exist():
     Test that no entries are returned if the hosts path is invalid
     """
     hosts = Hosts(path="invalid")
-    assert len(hosts.entries) == 0
+    assert hosts.count() == 0
 
 
 def test_line_break_identified_as_blank(tmpdir):
