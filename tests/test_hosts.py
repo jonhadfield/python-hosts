@@ -7,7 +7,8 @@ import sys
 import pytest
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from python_hosts import Hosts, HostsEntry, exception
+from python_hosts.hosts import Hosts, HostsEntry
+from python_hosts import exception
 
 
 def get_username():

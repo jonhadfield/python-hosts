@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from python_hosts import HostsEntry
+from python_hosts.hosts import HostsEntry
 
 
 def test_create_ipv4_instance():
@@ -42,14 +43,14 @@ def test_hostentry_repr():
 
 def test_hostentry_ipv4_str():
     an_entry = HostsEntry(entry_type='ipv4', address='1.2.3.4', comment=None, names=['example.com', 'example.org'])
-    assert(str(an_entry)) == "TYPE=ipv4, ADDR=1.2.3.4, NAMES=example.com example.org"
+    assert (str(an_entry)) == "TYPE=ipv4, ADDR=1.2.3.4, NAMES=example.com example.org"
 
 
 def test_hostentry_comment_str():
     an_entry = HostsEntry(entry_type='comment', address=None, comment='This is a comment', names=None)
-    assert(str(an_entry)) == "TYPE = comment, COMMENT = This is a comment"
+    assert (str(an_entry)) == "TYPE = comment, COMMENT = This is a comment"
 
 
 def test_hostentry_blank_str():
     an_entry = HostsEntry(entry_type='blank', address=None, comment=None, names=None)
-    assert(str(an_entry)) == "TYPE = blank"
+    assert (str(an_entry)) == "TYPE = blank"
