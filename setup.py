@@ -45,6 +45,11 @@ class PyTest(TestCommand):
         errno = pytest.main(self.pytest_args)
         sys.exit(errno)
 
+
+if sys.version_info[0] == 2:
+    importlib = "importlib"
+
+
 setup(
     name='python-hosts',
     version=version,
@@ -73,8 +78,10 @@ setup(
         'hosts, python, network'
     ),
     cmdclass={'test': PyTest},
-    tests_require=['pytest>=2.8.2',
-                   'pytest-cov>=2.2.0',
+    tests_require=['pytest',
+                   'pytest-cov',
+                   'PyYAML',
                    'hypothesis']
+
                    
 )
