@@ -1,9 +1,15 @@
 Changelog
-========
+=========
+
+0.3.4
+
+- Fix 'remove_all_matching()'. Thanks dmtucker (https://github.com/dmtucker)
+- Add option to write hosts files to an alternative path
+- Increase test coverage and the number of python versions tested against
 
 0.3.3
 
-- Fix but in `remove_all_matching()` which could cause entries to be skipped
+- Fix issue in `remove_all_matching()` which could cause entries to be skipped
 
 0.3.1
 

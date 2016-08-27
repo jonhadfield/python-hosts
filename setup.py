@@ -4,11 +4,10 @@ import os
 import sys
 from setuptools import setup
 from setuptools.command.test import test as TestCommand
-version = "0.3.3"
+version = "0.3.4"
 
 if sys.argv[-1] == 'publish':
-    os.system('python setup.py sdist upload')
-    os.system('python setup.py bdist_wheel upload')
+    os.system('python setup.py sdist upload -r pypi')
     sys.exit()
 
 if sys.argv[-1] == 'tag':
