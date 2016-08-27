@@ -205,7 +205,7 @@ class Hosts(object):
                                 ' '.join(line.names), ))
                         ipv6_entries_written += 1
         except:
-            raise UnableToWriteHosts
+            raise UnableToWriteHosts()
         return {'total_written': written_count + 1,
                 'comments_written': comments_written,
                 'blanks_written': blanks_written,
@@ -248,11 +248,14 @@ class Hosts(object):
         """
         if self.entries:
             if address and name:
-                self.entries = [x for x in self.entries if not (lambda y: y.address == address and name in y.names(x))]
+                func = lambda entry: entry.address != address and name not in entry.names
             elif address:
-                self.entries = [x for x in self.entries if not (lambda y: y.address == address)]
+                func = lambda entry: entry.address != address
             elif name:
-                self.entries = [x for x in self.entries if not (lambda y: y.address and name in y.names(x))]
+                func = lambda entry: name not in entry.names
+            else:
+                raise ValueError('No address or name was specified for removal.')
+            self.entries = list(filter(func, self.entries))
 
     def import_url(self, url=None):
         """
