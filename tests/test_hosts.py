@@ -23,6 +23,19 @@ def test_hosts_str(tmpdir):
     assert (str(hosts)) == "hosts_path={0}, TYPE=ipv4, ADDR=6.6.6.6, NAMES=example.com".format(hosts_file.strpath)
 
 
+def test_hosts_write_to_custom_path(tmpdir):
+    """ Test that the hosts file can be written to a different path to the one it was read from
+    """
+    hosts_file = tmpdir.mkdir("etc").join("hosts")
+    hosts_file.write("6.6.6.6\texample.com\n")
+    hosts = Hosts(path=hosts_file.strpath)
+    alternate_hosts_file = tmpdir.mkdir("tmp").join("hosts2")
+    hosts.write(path=alternate_hosts_file.strpath)
+    alternate_hosts = Hosts(path=alternate_hosts_file.strpath)
+    assert alternate_hosts.count() == 1
+    assert hosts.exists(address='6.6.6.6', names=['example.com'])
+
+
 def test_hosts_repr(tmpdir):
     """ Test that the repr method returns a useful representation of the hosts object
     """

@@ -171,9 +171,10 @@ class Hosts(object):
         else:
             return '/etc/hosts'
 
-    def write(self):
+    def write(self, path=None):
         """
         Write all of the HostsEntry instances back to the hosts file
+        :param path: override the write path
         :return: Dictionary containing counts
         """
         written_count = 0
@@ -181,8 +182,12 @@ class Hosts(object):
         blanks_written = 0
         ipv4_entries_written = 0
         ipv6_entries_written = 0
+        if path:
+            output_file_path = path
+        else:
+            output_file_path = self.hosts_path
         try:
-            with open(self.hosts_path, 'w') as hosts_file:
+            with open(output_file_path, 'w') as hosts_file:
                 for written_count, line in enumerate(self.entries):
                     if line.entry_type == 'comment':
                         hosts_file.write(line.comment)
