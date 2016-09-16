@@ -110,15 +110,23 @@ class HostsEntry(object):
         :param entry: A line from the hosts file
         :return: An instance of HostsEntry
         """
-        line_parts = entry.strip().split()
+        splited_line = entry.split(sep='#', maxsplit=1) #extract inline comment if present
+        inline_comment = None
+        if len(splited_line) == 2:
+            inline_comment = splited_entry[1].strip()
+            line_parts = splited_line[0].strip().split()
+        else:
+            line_parts = entry.strip().split()
         if is_ipv4(line_parts[0]) and valid_hostnames(line_parts[1:]):
             return HostsEntry(entry_type='ipv4',
                               address=line_parts[0],
-                              names=line_parts[1:])
+                              names=line_parts[1:],
+                              comment=inline_comment)
         elif is_ipv6(line_parts[0]) and valid_hostnames(line_parts[1:]):
             return HostsEntry(entry_type='ipv6',
                               address=line_parts[0],
-                              names=line_parts[1:])
+                              names=line_parts[1:],
+                              comment=inline_comment)
         else:
             return False
 
@@ -197,18 +205,24 @@ class Hosts(object):
                         hosts_file.write("\n")
                         blanks_written += 1
                     if line.entry_type == 'ipv4':
-                        hosts_file.write(
-                            "{0}\t{1}\n".format(
+                        out_line = "{0}\t{1}".format(
                                 line.address,
-                                ' '.join(line.names),
-                            )
-                        )
+                                ' '.join(line.names))
+                        if line.comment is not None:
+                            out_line = out_line+" #" + line.comment + "\n"
+                        else:
+                            out_line = out_line+"\n"
+                        hosts_file.write(out_line)
                         ipv4_entries_written += 1
                     if line.entry_type == 'ipv6':
-                        hosts_file.write(
-                            "{0}\t{1}\n".format(
+                        out_line = "{0}\t{1}".format(
                                 line.address,
-                                ' '.join(line.names), ))
+                                ' '.join(line.names))
+                        if line.comment is not None:
+                            out_line = out_line + " #" + line.comment + "\n"
+                        else:
+                            out_line = out_line + "\n"
+                        hosts_file.write(out_line)
                         ipv6_entries_written += 1
         except:
             raise UnableToWriteHosts()
@@ -244,10 +258,10 @@ class Hosts(object):
                         return True
         return False
 
-    def remove_all_matching(self, address=None, name=None):
+    def remove_all_matching(self, address=None, name=None, comment=None):
         """
         Remove all HostsEntry instances from the Hosts object
-        where the supplied ip address or name matches
+        where the supplied ip address, name or comment matches
         :param address: An ipv4 or ipv6 address
         :param name: A host name
         :return: None
@@ -259,6 +273,8 @@ class Hosts(object):
                 func = lambda entry: entry.address != address
             elif name:
                 func = lambda entry: name not in entry.names
+            elif comment:
+                func = lambda entry: entry.comment != comment
             else:
                 raise ValueError('No address or name was specified for removal.')
             self.entries = list(filter(func, self.entries))
@@ -408,7 +424,7 @@ class Hosts(object):
                         chunked_entry = splited_entry[0].split()
                         comment = None
                         if len(splited_entry) == 2:
-                            comment = splited_entry[1]
+                            comment = splited_entry[1].strip()
                         stripped_name_list = [name.strip() for name in chunked_entry[1:]]
 
                         self.entries.append(
