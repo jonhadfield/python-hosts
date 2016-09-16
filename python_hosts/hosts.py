@@ -75,9 +75,10 @@ class HostsEntry(object):
 
     def __str__(self):
         if self.entry_type in ('ipv4', 'ipv6'):
-            return "TYPE={0}, ADDR={1}, NAMES={2}".format(self.entry_type,
+            return "TYPE={0}, ADDR={1}, NAMES={2}, COMMENT={3}".format(self.entry_type,
                                                           self.address,
-                                                          " ".join(self.names))
+                                                          " ".join(self.names),
+                                                          self.comment)
         elif self.entry_type == 'comment':
             return "TYPE = {0}, COMMENT = {1}".format(self.entry_type, self.comment)
         elif self.entry_type == 'blank':
@@ -403,14 +404,19 @@ class Hosts(object):
                     elif entry_type == "blank":
                         self.entries.append(HostsEntry(entry_type="blank"))
                     elif entry_type in ("ipv4", "ipv6"):
-                        chunked_entry = hosts_entry.split()
+                        splited_entry = hosts_entry.split(sep='#', maxsplit=1)
+                        chunked_entry = splited_entry[0].split()
+                        comment = None
+                        if len(splited_entry) == 2:
+                            comment = splited_entry[1]
                         stripped_name_list = [name.strip() for name in chunked_entry[1:]]
 
                         self.entries.append(
                             HostsEntry(
                                 entry_type=entry_type,
                                 address=chunked_entry[0].strip(),
-                                names=stripped_name_list))
+                                names=stripped_name_list,
+                                comment=comment))
         except IOError:
             return {'result': 'failed',
                     'message': 'Cannot read: {0}.'.format(self.hosts_path)}
