@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.3.6
+
+- Fix regressions that meant comments were stripped and example imports failed.
+
 0.3.5
 
 - Fix issue bug in 'remove_all_matching()' where comments exist in hosts entries.
