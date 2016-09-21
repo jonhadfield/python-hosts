@@ -272,7 +272,7 @@ class Hosts(object):
             elif address:
                 func = lambda entry: entry.address != address
             elif name:
-                func = lambda entry: name not in entry.names
+                func = lambda entry: (entry.names is None) or (name not in entry.names)
             elif comment:
                 func = lambda entry: entry.comment != comment
             else:
