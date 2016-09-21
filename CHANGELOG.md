@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.3.5
+
+- Fix issue bug in 'remove_all_matching()' where comments exist in hosts entries.
+
 0.3.4
 
 - Fix 'remove_all_matching()'. Thanks dmtucker (https://github.com/dmtucker)
