@@ -257,7 +257,7 @@ class Hosts(object):
             elif address:
                 func = lambda entry: entry.address != address
             elif name:
-                func = lambda entry: name not in entry.names
+                func = lambda entry: not entry.comment and name not in entry.names
             else:
                 raise ValueError('No address or name was specified for removal.')
             self.entries = list(filter(func, self.entries))

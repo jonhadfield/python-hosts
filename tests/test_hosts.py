@@ -11,6 +11,23 @@ from python_hosts.hosts import Hosts, HostsEntry
 from python_hosts import exception
 
 
+def test_remove_existing_entry_using_name_only(tmpdir):
+    """
+    Test removal of an existing ip4 address
+    """
+    ipv4_line = '1.2.3.4 example.com example\n# this is a comment'
+    # comment_line = '# this is a comment'
+    hosts_file = tmpdir.mkdir("etc").join("hosts")
+    hosts_file.write(ipv4_line)
+    # hosts_file.write(comment_line)
+    hosts_entries = Hosts(path=hosts_file.strpath)
+    print(hosts_entries)
+    assert hosts_entries.exists(address='1.2.3.4')
+    assert hosts_entries.exists(names=['example.com'])
+    hosts_entries.remove_all_matching(name='example.com')
+    assert not hosts_entries.exists(names=['example.com'])
+
+
 def get_username():
     return pwd.getpwuid(os.getuid())[0]
 
