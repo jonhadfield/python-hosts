@@ -13,19 +13,33 @@ from python_hosts import exception
 
 def test_remove_existing_entry_using_name_only(tmpdir):
     """
-    Test removal of an existing ip4 address
+    Test removal of an existing entry using name only
     """
-    ipv4_line = '1.2.3.4 example.com example\n# this is a comment'
-    # comment_line = '# this is a comment'
+    entries = '1.2.3.4 example.com example\n# this is a comment\n3.4.5.6 random.com'
     hosts_file = tmpdir.mkdir("etc").join("hosts")
-    hosts_file.write(ipv4_line)
-    # hosts_file.write(comment_line)
+    hosts_file.write(entries)
     hosts_entries = Hosts(path=hosts_file.strpath)
-    print(hosts_entries)
     assert hosts_entries.exists(address='1.2.3.4')
     assert hosts_entries.exists(names=['example.com'])
     hosts_entries.remove_all_matching(name='example.com')
     assert not hosts_entries.exists(names=['example.com'])
+    hosts_entries.write()
+    assert '# this is a comment\n' in open(hosts_file.strpath).read()
+    assert '3.4.5.6\trandom.com' in open(hosts_file.strpath).read()
+
+
+def test_remove_existing_entry_using_address_only(tmpdir):
+    """
+    Test removal of an existing entry using ip4 address only
+    """
+    entries = '1.2.3.4 example.com example\n# this is a comment'
+    hosts_file = tmpdir.mkdir("etc").join("hosts")
+    hosts_file.write(entries)
+    hosts_entries = Hosts(path=hosts_file.strpath)
+    assert hosts_entries.exists(address='1.2.3.4')
+    assert hosts_entries.exists(names=['example.com'])
+    hosts_entries.remove_all_matching(address='1.2.3.4')
+    assert not hosts_entries.exists(address='1.2.3.4')
 
 
 def get_username():

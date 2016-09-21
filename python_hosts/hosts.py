@@ -235,12 +235,13 @@ class Hosts(object):
         :return: True if a supplied address or name is found. Otherwise, False.
         """
         for entry in self.entries:
-            if address and address == entry.address:
-                return True
-            if names:
-                for name in names:
-                    if name in entry.names:
-                        return True
+            if entry.entry_type in ('ipv4', 'ipv6'):
+                if address and address == entry.address:
+                    return True
+                if names:
+                    for name in names:
+                        if name in entry.names:
+                            return True
         return False
 
     def remove_all_matching(self, address=None, name=None):
@@ -255,9 +256,9 @@ class Hosts(object):
             if address and name:
                 func = lambda entry: entry.address != address and name not in entry.names
             elif address:
-                func = lambda entry: entry.address != address
+                func = lambda entry: entry.comment or entry.address != address
             elif name:
-                func = lambda entry: not entry.comment and name not in entry.names
+                func = lambda entry: entry.comment or name not in entry.names
             else:
                 raise ValueError('No address or name was specified for removal.')
             self.entries = list(filter(func, self.entries))
