@@ -367,7 +367,8 @@ class Hosts(object):
             if entry.address in ('0.0.0.0', '127.0.0.1'):
                 if set(entry.names).intersection(existing_names):
                     if force:
-                        self.remove_all_matching(name=entry.names)
+                        for name in entry.names:
+                            self.remove_all_matching(name=name)
                         import_entries.append(entry)
                     else:
                         duplicate_count += 1
@@ -384,7 +385,8 @@ class Hosts(object):
                 if not force:
                     duplicate_count += 1
                 else:
-                    self.remove_all_matching(name=entry.names)
+                    for name in entry.names:
+                        self.remove_all_matching(name=name)
                     replaced_count += 1
                     import_entries.append(entry)
             else:
