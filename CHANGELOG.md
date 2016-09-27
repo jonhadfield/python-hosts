@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.3.7
+
+- Enable force option for import_url
+
 0.3.6
 
 - Fix regressions that meant comments were stripped and example imports failed.
