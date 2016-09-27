@@ -263,7 +263,7 @@ class Hosts(object):
                 raise ValueError('No address or name was specified for removal.')
             self.entries = list(filter(func, self.entries))
 
-    def import_url(self, url=None):
+    def import_url(self, url=None, force=None):
         """
         Read a list of host entries from a URL, convert them into instances of HostsEntry and
         then append to the list of entries in Hosts
@@ -286,7 +286,7 @@ class Hosts(object):
                 import_entry = HostsEntry.str_to_hostentry(line)
                 if import_entry:
                     import_entries.append(import_entry)
-        add_result = self.add(entries=import_entries)
+        add_result = self.add(entries=import_entries, force=force)
         write_result = self.write()
         return {'result': 'success',
                 'skipped': skipped,

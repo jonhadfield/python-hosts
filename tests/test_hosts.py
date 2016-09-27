@@ -11,6 +11,30 @@ from python_hosts.hosts import Hosts, HostsEntry
 from python_hosts import exception
 
 
+def test_import_from_url_without_force(tmpdir):
+    """
+    Test that a bare import from URL does not replace names in existing entry
+    """
+    hosts_file = tmpdir.mkdir("etc").join("hosts")
+    hosts_file.write("1.2.3.4\texample1.com example2.com example3.com\n")
+    hosts = Hosts(path=hosts_file.strpath)
+    import_url = "https://dl.dropboxusercontent.com/u/167103/hosts_win3"
+    hosts.import_url(url=import_url)
+    assert hosts.exists(names=['example3.com'])
+
+
+def test_import_from_url_with_force(tmpdir):
+    """
+    Test that a bare import from URL does replace names in existing entry
+    """
+    hosts_file = tmpdir.mkdir("etc").join("hosts")
+    hosts_file.write("1.2.3.4\texample1.com example2.com example3.com\n")
+    hosts = Hosts(path=hosts_file.strpath)
+    import_url = "https://dl.dropboxusercontent.com/u/167103/hosts_win3"
+    hosts.import_url(url=import_url, force=True)
+    assert not hosts.exists(names=['example3.com'])
+
+
 def test_remove_existing_entry_using_name_only(tmpdir):
     """
     Test removal of an existing entry using name only
