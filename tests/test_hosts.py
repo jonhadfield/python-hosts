@@ -39,7 +39,7 @@ def test_remove_existing_entry_using_name_only(tmpdir):
     """
     Test removal of an existing entry using name only
     """
-    entries = '1.2.3.4 example.com example\n# this is a comment, two newlines (intentionally) follow, see issue #11\n\n3.4.5.6 random.com'
+    entries = '1.2.3.4 example.com example\n# this is a comment\n\n3.4.5.6 random.com' # two newlines intentionally follow, see issue  #11
     hosts_file = tmpdir.mkdir("etc").join("hosts")
     hosts_file.write(entries)
     hosts_entries = Hosts(path=hosts_file.strpath)

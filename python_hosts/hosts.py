@@ -66,6 +66,9 @@ class HostsEntry(object):
         self.comment = comment
         self.names = names
 
+    def is_real_entry(self):
+        return self.entry_type in ('ipv4', 'ipv6')
+
     def __repr__(self):
         return "HostsEntry(entry_type=\'{0}\', address=\'{1}\', " \
                "comment={2}, names={3})".format(self.entry_type,
@@ -254,11 +257,11 @@ class Hosts(object):
         """
         if self.entries:
             if address and name:
-                func = lambda entry: entry.address != address and name not in entry.names
+                func = lambda entry: not entry.is_real_entry() or (entry.address != address and name not in entry.names)
             elif address:
-                func = lambda entry: entry.comment or entry.address != address
+                func = lambda entry: not entry.is_real_entry() or entry.address != address
             elif name:
-                func = lambda entry: entry.comment or name not in entry.names
+                func = lambda entry: not entry.is_real_entry() or name not in entry.names
             else:
                 raise ValueError('No address or name was specified for removal.')
             self.entries = list(filter(func, self.entries))
