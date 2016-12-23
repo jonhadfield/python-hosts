@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.3.8
+
+- Fix TypeError in 'remove_all_matching()' if empty lines found. Thanks stardust85 (https://github.com/stardust85) 
+
 0.3.7
 
 - Enable force option for import_url
@@ -11,7 +15,7 @@ Changelog
 
 0.3.5
 
-- Fix issue bug in 'remove_all_matching()' where comments exist in hosts entries.
+- Fix bug in 'remove_all_matching()' where comments exist in hosts entries.
 
 0.3.4
 
