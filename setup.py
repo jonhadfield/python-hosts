@@ -79,8 +79,5 @@ setup(
     cmdclass={'test': PyTest},
     tests_require=['pytest',
                    'pytest-cov',
-                   'PyYAML',
-                   'hypothesis']
-
-                   
+                   'PyYAML']
 )
