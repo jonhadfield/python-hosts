@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.3.9
+
+- Fix issue where add with force would only remove entries matching the first name in the new entry. Thanks graemerobertson (https://github.com/graemerobertson)
+
 0.3.8
 
 - Fix TypeError in 'remove_all_matching()' if empty lines found. Thanks stardust85 (https://github.com/stardust85) 
