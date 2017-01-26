@@ -11,6 +11,38 @@ from python_hosts.hosts import Hosts, HostsEntry
 from python_hosts import exception
 
 
+def test_remove_all_matching_with_loopback_address_and_multiple_names(tmpdir):
+    """
+    Test that a forced addition of an adblock entry with multiple names first removes 'all' matching names
+    """
+    entries = '127.0.0.1 example.com example2.com\n# this is a comment\n\n3.4.5.6 random.com example2.com\n'
+    hosts_file = tmpdir.mkdir("etc").join("hosts")
+    hosts_file.write(entries)
+    hosts_entries = Hosts(path=hosts_file.strpath)
+    # assert hosts_entries.exists(address='0.0.0.0')
+    new_entry = HostsEntry.str_to_hostentry('127.0.0.1 example.com example2.com')
+    hosts_entries.add(entries=[new_entry], force=True)
+    assert hosts_entries.count() == 3  # 1 address, 1 comment and 1 blank
+    assert not hosts_entries.exists(address='3.4.5.6')
+    assert hosts_entries.exists(names=['example.com'])
+
+
+def test_remove_all_matching_with_non_loopback_address_and_multiple_names(tmpdir):
+    """
+    Test that a forced addition of an adblock entry with multiple names first removes 'all' matching names
+    """
+    entries = '1.2.1.1 example.com example2.com\n# this is a comment\n\n3.4.5.6 random.com example2.com\n'
+    hosts_file = tmpdir.mkdir("etc").join("hosts")
+    hosts_file.write(entries)
+    hosts_entries = Hosts(path=hosts_file.strpath)
+    # assert hosts_entries.exists(address='0.0.0.0')
+    new_entry = HostsEntry.str_to_hostentry('8.9.10.11 example.com example2.com')
+    hosts_entries.add(entries=[new_entry], force=True)
+    assert hosts_entries.count() == 3  # 1 address, 1 comment and 1 blank
+    assert not hosts_entries.exists(address='3.4.5.6')
+    assert hosts_entries.exists(names=['example.com'])
+
+
 def test_import_from_url_without_force(tmpdir):
     """
     Test that a bare import from URL does not replace names in existing entry
@@ -39,7 +71,7 @@ def test_remove_existing_entry_using_name_only(tmpdir):
     """
     Test removal of an existing entry using name only
     """
-    entries = '1.2.3.4 example.com example\n# this is a comment\n\n3.4.5.6 random.com' # two newlines intentionally follow, see issue  #11
+    entries = '1.2.3.4 example.com example\n# this is a comment\n\n3.4.5.6 random.com'  # two newlines intentionally follow, see issue  #11
     hosts_file = tmpdir.mkdir("etc").join("hosts")
     hosts_file.write(entries)
     hosts_entries = Hosts(path=hosts_file.strpath)
