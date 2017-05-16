@@ -16,15 +16,8 @@ if sys.argv[-1] == 'tag':
     sys.exit()
 
 readme = open('README.md').read()
-history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 
 requirements = []
-
-long_description = '{0}\n\n{1}'.format(readme, history)
-
-if sys.argv[-1] == 'readme':
-    print(long_description)
-    sys.exit()
 
 
 class PyTest(TestCommand):
@@ -58,7 +51,6 @@ setup(
     download_url='https://github.com/jonhadfield/python-hosts/tarball/{0}'.format(version),
     install_requires=['win_inet_pton'],
     description='A hosts file manager library written in python',
-    long_description=long_description,
     packages=['python_hosts'],
     platforms='any',
     license='MIT',
