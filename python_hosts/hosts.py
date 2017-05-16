@@ -10,6 +10,7 @@ c:\\\windows\\\system32\\\drivers\\\etc\\\hosts for a linux or MS windows
 based machine respectively. Each entry being represented as an instance
 of the HostsEntry class.
 """
+from __future__ import (absolute_import, unicode_literals, print_function)
 
 import sys
 
