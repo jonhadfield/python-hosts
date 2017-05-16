@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.4.0
+
+- Add Windows support. Thanks berdon (https://github.com/berdon)
+
 0.3.9
 
 - Fix issue where add with force would only remove entries matching the first name in the new entry. Thanks graemerobertson (https://github.com/graemerobertson)

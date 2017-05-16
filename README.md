@@ -35,7 +35,7 @@ Importing a list of host entries by URL
 Requirements
 ------------
 
-Tested on python 2.6, 2.7, 3.4, 3.5, pypy and pypy3
+Tested on python 2.6, 2.7, 3.3, 3.4, 3.5 and pypy
 
 
 License
