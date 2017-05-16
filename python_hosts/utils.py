@@ -2,6 +2,7 @@
 """
 This module contains utility functions used by the Hosts and HostsEntry methods
 """
+import win_inet_pton
 import socket
 import re
 import os
