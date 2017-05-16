@@ -56,7 +56,7 @@ setup(
     author_email='jon@lessknown.co.uk',
     url='https://github.com/jonhadfield/python-hosts',
     download_url='https://github.com/jonhadfield/python-hosts/tarball/{0}'.format(version),
-    install_requires=[],
+    install_requires=['win_inet_pton'],
     description='A hosts file manager library written in python',
     long_description=long_description,
     packages=['python_hosts'],
