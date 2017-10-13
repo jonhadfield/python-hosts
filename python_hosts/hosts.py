@@ -331,11 +331,12 @@ class Hosts(object):
             return {'result': 'failed',
                     'message': 'Cannot read: file {0}.'.format(import_file_path)}
 
-    def add(self, entries=None, force=False):
+    def add(self, entries=None, force=False, allow_address_duplication=False):
         """
         Add instances of HostsEntry to the instance of Hosts.
         :param entries: A list of instances of HostsEntry
         :param force: Remove matching before adding
+        :param allow_address_duplication: Allow using multiple entries for same address
         :return: The counts of successes and failures
         """
         ipv4_count = 0
@@ -352,7 +353,7 @@ class Hosts(object):
         existing_names = dedupe_list(existing_names)
         for entry in entries:
             # Allow duplicates entries for addresses used for adblocking
-            if entry.address in ('0.0.0.0', '127.0.0.1'):
+            if (entry.address in ('0.0.0.0', '127.0.0.1') or allow_address_duplication):
                 if set(entry.names).intersection(existing_names):
                     if force:
                         for name in entry.names:
