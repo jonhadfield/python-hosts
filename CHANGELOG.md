@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.4.1
+
+- Add option to allow duplicate IPs. Thanks Konstantin (https://github.com/Koc)
+- Update test integration
+
 0.4.0
 
 - Add Windows support. Thanks berdon (https://github.com/berdon)
