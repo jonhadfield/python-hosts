@@ -50,7 +50,7 @@ def test_import_from_url_without_force(tmpdir):
     hosts_file = tmpdir.mkdir("etc").join("hosts")
     hosts_file.write("1.2.3.4\texample1.com example2.com example3.com\n")
     hosts = Hosts(path=hosts_file.strpath)
-    import_url = "https://www.dropbox.com/s/sgi63va4lnmvej8/hosts_win3?dl=0"
+    import_url = "https://raw.githubusercontent.com/jonhadfield/python-hosts/devel/test_files/hosts_win3"
     hosts.import_url(url=import_url)
     assert hosts.exists(names=['example3.com'])
 
@@ -62,7 +62,7 @@ def test_import_from_url_with_force(tmpdir):
     hosts_file = tmpdir.mkdir("etc").join("hosts")
     hosts_file.write("1.2.3.4\texample1.com example2.com example3.com\n")
     hosts = Hosts(path=hosts_file.strpath)
-    import_url = "https://www.dropbox.com/s/sgi63va4lnmvej8/hosts_win3?dl=0"
+    import_url = "https://raw.githubusercontent.com/jonhadfield/python-hosts/devel/test_files/hosts_win3"
     hosts.import_url(url=import_url, force=True)
     assert not hosts.exists(names=['example3.com'])
 
@@ -149,7 +149,7 @@ def test_import_from_url_counters_for_part_success(tmpdir):
     hosts_file = tmpdir.mkdir("etc").join("hosts")
     hosts_file.write("6.6.6.6\texample.com\n")
     hosts = Hosts(path=hosts_file.strpath)
-    import_url = "https://dl.dropboxusercontent.com/u/167103/hosts"
+    import_url = "https://raw.githubusercontent.com/jonhadfield/python-hosts/devel/test_files/hosts"
     result = hosts.import_url(url=import_url)
     add_result = result.get('add_result')
     write_result = result.get('write_result')
@@ -311,7 +311,7 @@ def test_import_from_url(tmpdir):
     hosts_file = tmpdir.mkdir("etc").join("hosts")
     hosts_file.write("6.6.6.6\texample.com\n")
     hosts = Hosts(path=hosts_file.strpath)
-    import_url = "https://dl.dropboxusercontent.com/u/167103/hosts_win"
+    import_url = "https://raw.githubusercontent.com/jonhadfield/python-hosts/devel/test_files/hosts_win"
     import_url_result = hosts.import_url(url=import_url)
     import_url_add_result = import_url_result.get('add_result')
     import_url_write_result = import_url_result.get('write_result')
