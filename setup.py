@@ -2,8 +2,10 @@
 
 import os
 import sys
+
 from setuptools import setup
 from setuptools.command.test import test as TestCommand
+
 version = "0.4.1"
 
 if sys.argv[-1] == 'publish':
@@ -40,7 +42,6 @@ class PyTest(TestCommand):
 
 if sys.version_info[0] == 2:
     importlib = "importlib"
-
 
 setup(
     name='python-hosts',

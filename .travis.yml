@@ -2,18 +2,18 @@ sudo: required
 dist: trusty
 language: python
 python:
-  - "3.6"
-  - "3.5"
-  - "3.4"
-  - "3.3"
-  - "2.7"
-  - "pypy"
-  - "nightly"
+- "3.6"
+- "3.5"
+- "3.4"
+- "3.3"
+- "2.7"
+- "pypy"
+- "nightly"
 install:
-  - pip install coveralls
-  - pip install tox-travis
+- pip install coveralls
+- pip install tox-travis
 script:
-  - tox
+- tox
 after_success:
-  - coveralls
-  - bash <(curl -s https://codecov.io/bash)
+- coveralls
+- bash <(curl -s https://codecov.io/bash)

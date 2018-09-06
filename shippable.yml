@@ -2,15 +2,15 @@ sudo: required
 dist: trusty
 language: python
 python:
-  - "3.6"
-  - "3.5"
-  - "3.4"
-  - "2.7"
-  - "pypy"
+- "3.6"
+- "3.5"
+- "3.4"
+- "2.7"
+- "pypy"
 install:
-  - if [[ $TRAVIS_PYTHON_VERSION == 2* || $TRAVIS_PYTHON_VERSION == 'pypy' ]]; then pip install -r compat-test-requirements.txt; fi
-  - if [[ $TRAVIS_PYTHON_VERSION == 3* || $TRAVIS_PYTHON_VERSION == 'nightly' || $TRAVIS_PYTHON_VERSION == 'pypy3'* ]]; then pip install -r test-requirements.txt; fi
-  - pip install coveralls
-  - pip install tox-travis
+- if [[ $TRAVIS_PYTHON_VERSION == 2* || $TRAVIS_PYTHON_VERSION == 'pypy' ]]; then pip install -r compat-test-requirements.txt; fi
+- if [[ $TRAVIS_PYTHON_VERSION == 3* || $TRAVIS_PYTHON_VERSION == 'nightly' || $TRAVIS_PYTHON_VERSION == 'pypy3'* ]]; then pip install -r test-requirements.txt; fi
+- pip install coveralls
+- pip install tox-travis
 script:
-  - tox
+- tox

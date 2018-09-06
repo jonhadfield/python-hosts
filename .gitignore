@@ -5,6 +5,7 @@ hosts/__pycache__/
 *.py[cod]
 .idea/
 *.swp
+.pytest_cache/
 
 # C extensions
 *.so
