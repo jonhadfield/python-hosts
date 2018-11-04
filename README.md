@@ -32,6 +32,11 @@ Importing a list of host entries by URL
     hosts.import_url(url='https://dl.dropboxusercontent.com/u/167103/hosts')
     hosts.write()
 
+CLI
+---
+A command line client using python-hosts can be found here: https://github.com/jonhadfield/hostman
+
+
 Requirements
 ------------
 
