@@ -1,14 +1,37 @@
 # -*- coding: utf-8 -*-
+import datetime
 import os
 import pwd
 import sys
 
-import datetime
 import pytest
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from python_hosts.hosts import Hosts, HostsEntry
 from python_hosts import exception
+
+
+def test_add_comments(tmpdir):
+    """
+    Test adding a comment
+    """
+    entries = '127.0.0.1 example.com example2.com\n#existing comment'
+    hosts_path = tmpdir.mkdir("etc").join("hosts")
+    hosts_path.write(entries)
+    hosts_entries = Hosts(path=hosts_path.strpath)
+    assert hosts_entries.count() == 2  # 1 address and 1 comment
+    new_entry_1 = HostsEntry(entry_type='comment', comment='# an example comment')
+    new_entry_2 = HostsEntry(entry_type='comment', comment='another example comment')
+    hosts_entries.add(entries=[new_entry_1, new_entry_2], force=True)
+    assert hosts_entries.count() == 4  # 1 address and 3 comments
+    assert not hosts_entries.exists(address='3.4.5.6')
+    assert hosts_entries.exists(comment='# an example comment')
+    assert hosts_entries.exists(comment='# another example comment')
+    assert hosts_entries.exists(names=['example.com'])
+    # check the entries can be written and then read correctly
+    hosts_entries.write()
+    hosts_entries_2 = Hosts(path=hosts_path.strpath)
+    assert hosts_entries_2.count() == 4  # 1 address and 3 comments
 
 
 def test_remove_all_matching_with_loopback_address_and_multiple_names(tmpdir):
