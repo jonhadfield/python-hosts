@@ -19,7 +19,7 @@ Example usage
 ------------
 Adding an entry to a hosts file
 
-    from python_hosts import Hosts, HostsEntry
+    from python_hosts.hosts import Hosts, HostsEntry
     hosts = Hosts(path='hosts_test')
     new_entry = HostsEntry(entry_type='ipv4', address='1.2.3.4', names=['www.example.com', 'example'])
     hosts.add([new_entry])
