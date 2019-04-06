@@ -419,6 +419,8 @@ class Hosts(object):
                 for hosts_entry in hosts_entries:
                     entry_type = HostsEntry.get_entry_type(hosts_entry)
                     if entry_type == "comment":
+                        hosts_entry = hosts_entry.replace("\r", "")
+                        hosts_entry = hosts_entry.replace("\n", "")
                         self.entries.append(HostsEntry(entry_type="comment",
                                                        comment=hosts_entry))
                     elif entry_type == "blank":
