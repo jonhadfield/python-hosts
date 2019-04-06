@@ -193,7 +193,7 @@ class Hosts(object):
             with open(output_file_path, 'w') as hosts_file:
                 for written_count, line in enumerate(self.entries):
                     if line.entry_type == 'comment':
-                        hosts_file.write(line.comment)
+                        hosts_file.write(line.comment + "\n")
                         comments_written += 1
                     if line.entry_type == 'blank':
                         hosts_file.write("\n")
@@ -230,12 +230,13 @@ class Hosts(object):
         response = urlopen(url)
         return response.read()
 
-    def exists(self, address=None, names=None):
+    def exists(self, address=None, names=None, comment=None):
         """
-        Determine if the supplied address and/or names exist in a HostsEntry within Hosts
+        Determine if the supplied address and/or names, or comment, exists in a HostsEntry within Hosts
         :param address: An ipv4 or ipv6 address to search for
         :param names: A list of names to search for
-        :return: True if a supplied address or name is found. Otherwise, False.
+        :param comment: A comment to search for
+        :return: True if a supplied address, name, or comment is found. Otherwise, False.
         """
         for entry in self.entries:
             if entry.entry_type in ('ipv4', 'ipv6'):
@@ -245,6 +246,8 @@ class Hosts(object):
                     for name in names:
                         if name in entry.names:
                             return True
+            elif entry.entry_type == 'comment' and entry.comment == comment:
+                return True
         return False
 
     def remove_all_matching(self, address=None, name=None):
@@ -341,6 +344,7 @@ class Hosts(object):
         """
         ipv4_count = 0
         ipv6_count = 0
+        comment_count = 0
         invalid_count = 0
         duplicate_count = 0
         replaced_count = 0
@@ -352,8 +356,13 @@ class Hosts(object):
                 existing_names.extend(item.names)
         existing_names = dedupe_list(existing_names)
         for entry in entries:
-            # Allow duplicates entries for addresses used for adblocking
-            if (entry.address in ('0.0.0.0', '127.0.0.1') or allow_address_duplication):
+            if entry.entry_type == 'comment':
+                entry.comment = entry.comment.strip()
+                if entry.comment[0] != "#":
+                    entry.comment = "# " + entry.comment
+                import_entries.append(entry)
+            elif entry.address in ('0.0.0.0', '127.0.0.1') or allow_address_duplication:
+                # Allow duplicates entries for addresses used for adblocking
                 if set(entry.names).intersection(existing_names):
                     if force:
                         for name in entry.names:
@@ -382,13 +391,17 @@ class Hosts(object):
                 import_entries.append(entry)
 
         for item in import_entries:
-            if item.entry_type == 'ipv4':
+            if item.entry_type == 'comment':
+                comment_count += 1
+                self.entries.append(item)
+            elif item.entry_type == 'ipv4':
                 ipv4_count += 1
                 self.entries.append(item)
             elif item.entry_type == 'ipv6':
                 ipv6_count += 1
                 self.entries.append(item)
-        return {'ipv4_count': ipv4_count,
+        return {'comment_count': comment_count,
+                'ipv4_count': ipv4_count,
                 'ipv6_count': ipv6_count,
                 'invalid_count': invalid_count,
                 'duplicate_count': duplicate_count,
