@@ -334,12 +334,13 @@ class Hosts(object):
             return {'result': 'failed',
                     'message': 'Cannot read: file {0}.'.format(import_file_path)}
 
-    def add(self, entries=None, force=False, allow_address_duplication=False):
+    def add(self, entries=None, force=False, allow_address_duplication=False, merge_names=False):
         """
         Add instances of HostsEntry to the instance of Hosts.
         :param entries: A list of instances of HostsEntry
         :param force: Remove matching before adding
         :param allow_address_duplication: Allow using multiple entries for same address
+        :param merge_names: Merge names where address already exists
         :return: The counts of successes and failures
         """
         ipv4_count = 0
@@ -373,8 +374,22 @@ class Hosts(object):
                 else:
                     import_entries.append(entry)
             elif entry.address in existing_addresses:
-                if not force:
+                if not any((force, merge_names)):
                     duplicate_count += 1
+                elif merge_names:
+                    # get the last entry with matching address
+                    entry_names = list()
+                    for existing_entry in self.entries:
+                        if entry.address == existing_entry.address:
+                            entry_names = existing_entry.names
+                            break
+                    # merge names with that entry
+                    merged_names = list(set(entry.names + entry_names))
+                    # remove all matching
+                    self.remove_all_matching(address=entry.address)
+                    # append merged entry
+                    entry.names = merged_names
+                    import_entries.append(entry)
                 elif force:
                     self.remove_all_matching(address=entry.address)
                     replaced_count += 1

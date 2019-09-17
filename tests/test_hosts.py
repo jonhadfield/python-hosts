@@ -11,6 +11,23 @@ from python_hosts.hosts import Hosts, HostsEntry
 from python_hosts import exception
 
 
+def test_merge_names(tmpdir):
+    """
+    Test replacement of an ipv4 entry where just the address differs
+    """
+    hosts_file = tmpdir.mkdir("etc").join("hosts")
+    hosts_file.write("82.132.132.132\texample.com\texample\n")
+    hosts_entries = Hosts(path=hosts_file.strpath)
+    new_entry = HostsEntry(entry_type='ipv4', address='82.132.132.132', names=['another.example'])
+    hosts_entries.add(entries=[new_entry], merge_names=True)
+    assert hosts_entries.count() == 1
+    print(hosts_entries)
+    assert len(hosts_entries.entries[0].names) == 3
+    assert 'example.com' in hosts_entries.entries[0].names
+    assert 'example' in hosts_entries.entries[0].names
+    assert 'another.example' in hosts_entries.entries[0].names
+
+
 def test_add_comments(tmpdir):
     """
     Test adding a comment
