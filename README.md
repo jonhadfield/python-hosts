@@ -19,7 +19,7 @@ Example usage
 ------------
 Adding an entry to a hosts file
 
-    from python_hosts.hosts import Hosts, HostsEntry
+    from python_hosts import Hosts, HostsEntry
     hosts = Hosts(path='hosts_test')
     new_entry = HostsEntry(entry_type='ipv4', address='1.2.3.4', names=['www.example.com', 'example'])
     hosts.add([new_entry])
@@ -27,7 +27,7 @@ Adding an entry to a hosts file
 
 Importing a list of host entries by URL
 
-    from python_hosts.hosts import Hosts
+    from python_hosts import Hosts
     hosts = Hosts(path='hosts_test')
     hosts.import_url(url='https://gist.githubusercontent.com/jonhadfield/5b6cdf853ef629f9b187345d89157280/raw/ddfa4a069fb12bf3c1f285249d44922aeb75db3f/hosts')
     hosts.write()
