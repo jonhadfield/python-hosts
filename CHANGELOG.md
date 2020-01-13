@@ -1,6 +1,33 @@
 Changelog
 =========
 
+1.0.0
+
+- Promote to 1.0.0 now it is being used in production
+- Remove support for Python 3.4 due to dependency PyYAML [dropping support](https://github.com/yaml/pyyaml/issues/281)
+
+0.4.6
+
+- Enable merging of entries
+- Remove unnecessary win_inet_pton requirement. Thanks dotlambda (https://github.com/dotlambda)
+- Support adding comments
+
+0.4.5
+
+- Add win_inet_pton to requirements
+
+0.4.4
+
+- Linting
+
+0.4.3
+
+- Freeze win_inet_pton version
+
+0.4.2
+
+- Travis build changes
+
 0.4.1
 
 - Add option to allow duplicate IPs. Thanks Konstantin (https://github.com/Koc)
