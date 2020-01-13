@@ -4,6 +4,7 @@ Changelog
 1.0.0
 
 - Promote to 1.0.0 now it is being used in production
+- Add support for Python 3.8
 - Remove support for Python 3.4 due to dependency PyYAML [dropping support](https://github.com/yaml/pyyaml/issues/281)
 
 0.4.6
