@@ -8,30 +8,18 @@ matrix:
     dist: trusty
     sudo: false
     python: '2.7'
-    services:
-      - docker
   - os: linux
     dist: trusty
-    sudo: false
     python: '3.5'
   - os: linux
     dist: trusty
-    sudo: false
     python: '3.6'
   - os: linux
     dist: xenial
-    sudo: required
-    services:
-      - docker
     python: '3.7'
-    env: BUILD_SDIST=true
   - os: linux
     dist: xenial
-    sudo: required
-    services:
-      - docker
     python: '3.8'
-    env: BUILD_SDIST=true
   - os: linux
     sudo: false
     python: pypy
