@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import datetime
 import os
-import pwd
+import getpass
 import sys
 
 import pytest
@@ -139,7 +139,7 @@ def test_remove_existing_entry_using_address_only(tmpdir):
 
 
 def get_username():
-    return pwd.getpwuid(os.getuid())[0]
+    return getpass.getuser()
 
 
 def test_hosts_str(tmpdir):
