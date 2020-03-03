@@ -3,6 +3,7 @@ import datetime
 import os
 import getpass
 import sys
+import tempfile
 
 import pytest
 
@@ -219,7 +220,7 @@ def test_write_will_create_path_if_missing():
     """
     now = datetime.datetime.now()
     timestamp = now.strftime('%Y%m%d%H%M%S')
-    hosts_path = '/tmp/testwrite.{0}'.format(timestamp)
+    hosts_path = '{0}{1}testwrite.{2}'.format(tempfile.gettempdir(), os.sep, timestamp)
     hosts = Hosts(path=hosts_path)
     entry = HostsEntry.str_to_hostentry('1.2.3.4 example.com example.org')
     hosts.add(entries=[entry])
