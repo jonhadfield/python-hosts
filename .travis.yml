@@ -45,7 +45,7 @@ install:
 - pip install coveralls
 - pip install tox-travis
 script:
-- tox
+- tox -- -v
 after_success:
 - coveralls
 - bash <(curl -s https://codecov.io/bash)
