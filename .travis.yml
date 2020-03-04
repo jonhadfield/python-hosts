@@ -2,7 +2,7 @@ language: python
 sudo: required
 matrix:
   include:
-  - python: 3.8.0
+  - python: 3.7.5
     env: TOXENV=3.7 RUN_SUITE=y
     os: windows
     stage: test
