@@ -2,15 +2,6 @@ language: python
 sudo: required
 matrix:
   include:
-  - python: 3.7.5
-    env: TOXENV=3.7 RUN_SUITE=y
-    os: windows
-    stage: test
-    language: sh
-    before_install:
-      - choco install python --version=3.7.5
-      - export PATH="/c/Python37:/c/Python37/Scripts:$PATH"
-      - python -m pip install --upgrade pip wheel
   - os: windows
     language: shell
     before_install:
