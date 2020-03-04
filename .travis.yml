@@ -2,6 +2,15 @@ language: python
 sudo: required
 matrix:
   include:
+  - python: 3.8.0
+    env: TOXENV=3.7 RUN_SUITE=y
+    os: windows
+    stage: test
+    language: sh
+    before_install:
+      - choco install python --version=3.7.5
+      - export PATH="/c/Python37:/c/Python37/Scripts:$PATH"
+      - python -m pip install --upgrade pip wheel
   - os: windows
     language: shell
     before_install:
@@ -10,15 +19,6 @@ matrix:
       - python -m pip install --upgrade pip
       - pip3 install --upgrade pytest
     env: PATH=/c/Python38:/c/Python38/Scripts:$PATH
-  - os: windows
-    language: sh
-    before_install:
-      - git clone https://github.com/pyenv-win/pyenv-win.git $HOME/.pyenv
-      - export PATH="$HOME/.pyenv/pyenv-win/bin:$HOME/.pyenv/pyenv-win/shims:$PATH"
-      - pyenv install -q 3.7.1
-      - pyenv rehash
-      - pyenv local 3.7.1
-      - python --version
   - os: linux
     dist: trusty
     sudo: false
