@@ -3,6 +3,7 @@ sudo: required
 matrix:
   include:
   - os: windows
+    python: '3.8'
     language: shell
     before_install:
       - choco install python --version 3.8.0
