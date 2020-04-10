@@ -429,7 +429,7 @@ class Hosts(object):
         :return: None
         """
         try:
-            with open(self.hosts_path, 'r') as hosts_file:
+            with open(self.hosts_path, 'r',encoding='utf-8',errors='ignore') as hosts_file:
                 hosts_entries = [line for line in hosts_file]
                 for hosts_entry in hosts_entries:
                     entry_type = HostsEntry.get_entry_type(hosts_entry)
