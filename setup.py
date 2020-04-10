@@ -5,7 +5,7 @@ import sys
 
 from setuptools import setup
 from setuptools.command.test import test as TestCommand
-version = "0.4.7"
+version = "1.0.0"
 
 if sys.argv[-1] == 'publish':
     os.system('python setup.py sdist upload -r pypi')
@@ -52,6 +52,7 @@ setup(
     description='A hosts file manager library written in python',
     long_description='A hosts file manager library written in python',
     packages=['python_hosts'],
+    install_requires=['win_inet_pton'],
     platforms='any',
     license='MIT',
     classifiers=[

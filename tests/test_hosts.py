@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 import datetime
 import os
-import pwd
+import getpass
 import sys
+import tempfile
 
 import pytest
 
@@ -139,7 +140,7 @@ def test_remove_existing_entry_using_address_only(tmpdir):
 
 
 def get_username():
-    return pwd.getpwuid(os.getuid())[0]
+    return getpass.getuser()
 
 
 def test_hosts_str(tmpdir):
@@ -219,7 +220,7 @@ def test_write_will_create_path_if_missing():
     """
     now = datetime.datetime.now()
     timestamp = now.strftime('%Y%m%d%H%M%S')
-    hosts_path = '/tmp/testwrite.{0}'.format(timestamp)
+    hosts_path = '{0}{1}testwrite.{2}'.format(tempfile.gettempdir(), os.sep, timestamp)
     hosts = Hosts(path=hosts_path)
     entry = HostsEntry.str_to_hostentry('1.2.3.4 example.com example.org')
     hosts.add(entries=[entry])

@@ -4,6 +4,7 @@ This module contains utility functions used by the Hosts and HostsEntry methods
 """
 import os
 import re
+import win_inet_pton
 
 import socket
 

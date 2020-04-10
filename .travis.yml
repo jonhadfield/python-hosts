@@ -3,33 +3,30 @@ sudo: required
 matrix:
   include:
 #  - os: windows
-#    python: '2.7'
+#    python: '3.8'
+#    language: shell
+#    before_install:
+#      - choco install python --version 3.8.0
+#      - python --version
+#      - python -m pip install --upgrade pip
+#      - pip3 install --upgrade pytest
+#    env: PATH=/c/Python38:/c/Python38/Scripts:$PATH
   - os: linux
     dist: trusty
     sudo: false
     python: '2.7'
   - os: linux
     dist: trusty
-    sudo: false
     python: '3.5'
   - os: linux
     dist: trusty
-    sudo: false
     python: '3.6'
   - os: linux
     dist: xenial
-    sudo: required
-    services:
-      - docker
     python: '3.7'
-    env: BUILD_SDIST=true
   - os: linux
     dist: xenial
-    sudo: required
-    services:
-      - docker
     python: '3.8'
-    env: BUILD_SDIST=true
   - os: linux
     sudo: false
     python: pypy
@@ -49,7 +46,7 @@ install:
 - pip install coveralls
 - pip install tox-travis
 script:
-- tox
+- tox -- -vv
 after_success:
 - coveralls
 - bash <(curl -s https://codecov.io/bash)
