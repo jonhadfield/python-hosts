@@ -299,11 +299,12 @@ class Hosts(object):
                 'add_result': add_result,
                 'write_result': write_result}
 
-    def import_file(self, import_file_path=None):
+    def import_file(self, import_file_path=None, force=False):
         """
         Read a list of host entries from a file, convert them into instances
         of HostsEntry and then append to the list of entries in Hosts
         :param import_file_path: The path to the file containing the host entries
+        :param force: Remove matching before adding
         :return: Counts reflecting the attempted additions
         """
         skipped = 0

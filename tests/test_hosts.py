@@ -386,6 +386,30 @@ def test_import_file_increments_invalid_counter(tmpdir):
     assert import_file_write_result.get('ipv4_entries_written') == 2
     assert import_file_write_result.get('total_written') == 2
 
+def test_import_from_file_with_force(tmpdir):
+    """
+    Test that correct counters values are returned
+    when a text file of host entries is imported
+    Existing host file has: 1 ipv4 entry
+    Import file has: 2 ipv4 entries plus 1 invalid entry
+
+    Add should return 2
+    Dedupe will find a single duplicate
+    Add will return 1 as invalid
+    Write will write 1 new entry plus the existing entry (1 + 1 = 2)
+    """
+    hosts_file = tmpdir.mkdir("etc").join("hosts")
+    hosts_file.write("82.132.132.132\texample.com\texample\n")
+    import_file = tmpdir.mkdir("input").join("infile")
+    import_file.write("10.10.10.10\thello.com\n82.132.132.132\texample.com\texample\n")
+    hosts_entries = Hosts(path=hosts_file.strpath)
+    import_file_result = hosts_entries.import_file(import_file.strpath, force=True)
+    assert not import_file_result.get('result') == 'failed'
+    import_file_write_result = import_file_result.get('write_result')
+    assert import_file_result.get('invalid_count') == 0
+    assert import_file_write_result.get('ipv4_entries_written') == 2
+    assert import_file_write_result.get('total_written') == 2
+
 
 def test_replacement_of_ipv4_entry_where_address_differs(tmpdir):
     """
