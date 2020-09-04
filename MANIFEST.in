@@ -1,6 +1,6 @@
 include AUTHORS.rst
 include CONTRIBUTING.rst
-include LICENSE
+include LICENSE.txt
 include README.md
 
 recursive-include tests *
