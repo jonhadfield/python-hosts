@@ -1,6 +1,6 @@
 python-hosts
 ========
-[![Build Status](https://api.travis-ci.org/jonhadfield/python-hosts.svg?branch=devel)](https://travis-ci.org/jonhadfield/python-hosts) [![Coverage Status](https://coveralls.io/repos/jonhadfield/python-hosts/badge.svg?branch=devel&service=github)](https://coveralls.io/github/jonhadfield/python-hosts?branch=devel) [![Docs](https://img.shields.io/badge/docs-latest-brightgreen.svg?style=flat)](http://python-hosts.readthedocs.org/en/latest/)
+[![Build Status](https://api.travis-ci.org/jonhadfield/python-hosts.svg?branch=devel)](https://travis-ci.org/jonhadfield/python-hosts) [![codecov](https://codecov.io/gh/jonhadfield/python-hosts/branch/devel/graph/badge.svg)](https://codecov.io/gh/jonhadfield/python-hosts) [![Docs](https://img.shields.io/badge/docs-latest-brightgreen.svg?style=flat)](http://python-hosts.readthedocs.org/en/latest/)
 
 
 This is a python library for managing a hosts file. 
