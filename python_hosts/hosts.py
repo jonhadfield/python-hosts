@@ -6,7 +6,7 @@ and name(s), a comment, or a blank line/line separator.
 
 Hosts:
 A representation of a hosts file, e.g. /etc/hosts and
-c:\\\windows\\\system32\\\drivers\\\etc\\\hosts for a linux or MS windows
+c:\\\\windows\\\\system32\\\\drivers\\\\etc\\\\hosts for a linux or MS windows
 based machine respectively. Each entry being represented as an instance
 of the HostsEntry class.
 """
