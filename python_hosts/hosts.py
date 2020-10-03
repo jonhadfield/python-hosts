@@ -269,6 +269,28 @@ class Hosts(object):
                 raise ValueError('No address or name was specified for removal.')
             self.entries = list(filter(func, self.entries))
 
+    def find_all_matching(self, address=None, name=None):
+        """
+        Return all HostsEntry instances from the Hosts object
+        where the supplied ip address or name matches
+        :param address: An ipv4 or ipv6 address
+        :param name: A host name
+        :return: HostEntry instances
+        """
+        results = []
+        if self.entries:
+            for entry in self.entries:
+                if not entry.is_real_entry():
+                    continue
+                if address and name:
+                    if address == entry.address and name in entry.names:
+                        results.append(entry)
+                elif address and address == entry.address:
+                    results.append(entry)
+                elif name in entry.names:
+                    results.append(entry)
+        return results
+
     def import_url(self, url=None, force=None):
         """
         Read a list of host entries from a URL, convert them into instances of HostsEntry and
