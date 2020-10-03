@@ -4,6 +4,7 @@ Changelog
 1.0.1
 
 - Add function to enable finding host entries by name or address
+- Fix deprecation warnings. Thanks tirkarthi (https://github.com/tirkarthi)
 
 1.0.0
 
