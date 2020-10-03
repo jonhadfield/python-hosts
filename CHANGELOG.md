@@ -1,6 +1,10 @@
 Changelog
 =========
 
+1.0.1
+
+- Add function to enable finding host entries by name or address
+
 1.0.0
 
 - Promote to 1.0.0 now it is being used in production
