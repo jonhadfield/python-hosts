@@ -12,6 +12,22 @@ from python_hosts.hosts import Hosts, HostsEntry
 from python_hosts import exception
 
 
+def test_find_all_matching_by_name_and_address(tmpdir):
+    """
+    Test all items with matching matching names and addresses are returned
+    """
+    entries = '1.2.1.1 example.com example2.com\n# this is a comment\n\n3.4.5.6 random.com example2.com\n'
+    hosts_file = tmpdir.mkdir("etc").join("hosts")
+    hosts_file.write(entries)
+    hosts_entries = Hosts(path=hosts_file.strpath)
+    hosts_matching_name = hosts_entries.find_all_matching(name="example2.com")
+    assert len(hosts_matching_name) == 2  # 2 entries contain example2.com
+    hosts_matching_address = hosts_entries.find_all_matching(address="1.2.1.1")
+    assert len(hosts_matching_address) == 1  # 1 entry matches 1.2.1.1
+    hosts_matching_address = hosts_entries.find_all_matching(name="example2.com", address="1.2.1.1")
+    assert len(hosts_matching_address) == 1  # 1 entry matches 1.2.1.1 with name example2.com
+
+
 def test_merge_names(tmpdir):
     """
     Test replacement of an ipv4 entry where just the address differs
@@ -27,7 +43,6 @@ def test_merge_names(tmpdir):
     assert 'example.com' in hosts_entries.entries[0].names
     assert 'example' in hosts_entries.entries[0].names
     assert 'another.example' in hosts_entries.entries[0].names
-
 
 def test_add_comments(tmpdir):
     """
