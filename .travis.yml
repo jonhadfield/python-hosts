@@ -12,25 +12,27 @@ matrix:
 #      - pip3 install --upgrade pytest
 #    env: PATH=/c/Python38:/c/Python38/Scripts:$PATH
   - os: linux
-    dist: trusty
+    dist: bionic
     sudo: false
     python: '2.7'
   - os: linux
-    dist: trusty
+    dist: bionic
     python: '3.5'
   - os: linux
-    dist: trusty
+    dist: bionic
     python: '3.6'
   - os: linux
-    dist: xenial
+    dist: bionic
     python: '3.7'
   - os: linux
-    dist: xenial
+    dist: bionic
     python: '3.8'
   - os: linux
+    dist: xenial
     sudo: false
     python: pypy
   - os: linux
+    dist: bionic
     sudo: false
     python: pypy3
   - os: osx
@@ -43,6 +45,7 @@ matrix:
     language: objective-c
     env: PYENV_VERSION=3.6.5
 install:
+- pip install --upgrade pip
 - pip install coveralls
 - pip install tox-travis
 script:
