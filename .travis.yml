@@ -36,7 +36,7 @@ matrix:
     before_install:
       - pip install -U pip
       - pip install cryptography==3.1.1
-    python: pypy
+    python: pypy2
   - os: linux
     dist: bionic
     sudo: false
