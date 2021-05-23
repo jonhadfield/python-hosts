@@ -40,7 +40,7 @@ A command line client using python-hosts can be found here: https://github.com/j
 Requirements
 ------------
 
-Tested on python 2.6, 2.7, 3.3, 3.5, 3.6, 3.7, 3.8, pypy and pypy3
+Tested on python 2.7, 3.5, 3.6, 3.7, 3.8, 3.9, pypy and pypy3
 
 
 License
