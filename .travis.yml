@@ -31,7 +31,7 @@ matrix:
     dist: bionic
     python: '3.9'
   - os: linux
-    dist: bionic
+    dist: focal
     sudo: false
     before_install:
       - pip install -U pip
