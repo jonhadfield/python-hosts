@@ -174,7 +174,7 @@ class Hosts(object):
         else:
             return '/etc/hosts'
 
-    def write(self, path=None):
+    def write(self, path=None, mode='w'):
         """
         Write all of the HostsEntry instances back to the hosts file
         :param path: override the write path
@@ -190,7 +190,7 @@ class Hosts(object):
         else:
             output_file_path = self.hosts_path
         try:
-            with open(output_file_path, 'w') as hosts_file:
+            with open(output_file_path, mode) as hosts_file:
                 for written_count, line in enumerate(self.entries):
                     if line.entry_type == 'comment':
                         hosts_file.write(line.comment + "\n")
