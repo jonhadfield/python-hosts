@@ -8,24 +8,28 @@ from python_hosts.hosts import HostsEntry
 
 def test_create_ipv4_instance():
     """ add an ipv4 type entry """
-    hosts_entry = HostsEntry(entry_type='ipv4', address='1.2.3.4', names=['example.com', 'example'])
+    hosts_entry = HostsEntry(entry_type='ipv4', address='1.2.3.4', names=['example.com', 'example'], comment='this is a comment')
     assert hosts_entry.entry_type == 'ipv4'
     assert hosts_entry.address == '1.2.3.4'
     assert hosts_entry.names == ['example.com', 'example']
+    assert hosts_entry.comment == 'this is a comment'
 
 
 def test_str_to_hostentry_ipv4():
-    str_entry = HostsEntry.str_to_hostentry('10.10.10.10 example.com example.org example')
+    str_entry = HostsEntry.str_to_hostentry('10.10.10.10 example.com example.org example # another comment')
     assert str_entry.entry_type == 'ipv4'
     assert str_entry.address == '10.10.10.10'
     assert str_entry.names == ['example.com', 'example.org', 'example']
+    assert str_entry.comment == 'another comment'
 
 
 def test_str_to_hostentry_ipv6():
-    str_entry = HostsEntry.str_to_hostentry('2001:0db8:85a3:0042:1000:8a2e:0370:7334 example.com example')
+    str_entry = HostsEntry.str_to_hostentry('2001:0db8:85a3:0042:1000:8a2e:0370:7334 example.com example # more comments here')
     assert str_entry.entry_type == 'ipv6'
     assert str_entry.address == '2001:0db8:85a3:0042:1000:8a2e:0370:7334'
     assert str_entry.names == ['example.com', 'example']
+    assert str_entry.comment == 'more comments here'
+
 
 
 def test_str_to_hostentry_returns_fails_with_false():
@@ -34,16 +38,16 @@ def test_str_to_hostentry_returns_fails_with_false():
 
 
 def test_hostentry_repr():
-    an_entry = HostsEntry(entry_type='ipv4', address='1.2.3.4', comment=None, names=['example.com', 'example.org'])
+    an_entry = HostsEntry(entry_type='ipv4', address='1.2.3.4', comment='test comment', names=['example.com', 'example.org'])
     assert repr(an_entry) == r"HostsEntry(entry_type='ipv4', " \
                              "address='1.2.3.4', " \
-                             "comment=None, " \
-                             "names=['example.com', 'example.org'])"
+                             "names=['example.com', 'example.org'], " \
+                             "comment='test comment')"
 
 
 def test_hostentry_ipv4_str():
-    an_entry = HostsEntry(entry_type='ipv4', address='1.2.3.4', comment=None, names=['example.com', 'example.org'])
-    assert (str(an_entry)) == "TYPE=ipv4, ADDR=1.2.3.4, NAMES=example.com example.org"
+    an_entry = HostsEntry(entry_type='ipv4', address='1.2.3.4', comment='more comments coming', names=['example.com', 'example.org'])
+    assert (str(an_entry)) == "TYPE=ipv4, ADDR=1.2.3.4, NAMES=example.com example.org, COMMENT=more comments coming"
 
 
 def test_hostentry_comment_str():
