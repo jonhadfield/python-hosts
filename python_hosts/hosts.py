@@ -71,16 +71,21 @@ class HostsEntry(object):
 
     def __repr__(self):
         return "HostsEntry(entry_type=\'{0}\', address=\'{1}\', " \
-               "comment={2}, names={3})".format(self.entry_type,
-                                                self.address,
-                                                self.comment,
-                                                self.names)
+               "names={2}, comment=\'{3}\')".format(
+                   self.entry_type,
+                   self.address,
+                   self.names,
+                   self.comment
+                   )
 
     def __str__(self):
         if self.entry_type in ('ipv4', 'ipv6'):
-            return "TYPE={0}, ADDR={1}, NAMES={2}".format(self.entry_type,
-                                                          self.address,
-                                                          " ".join(self.names))
+            return "TYPE={0}, ADDR={1}, NAMES={2}, COMMENT={3}".format(
+                self.entry_type,
+                self.address,
+                " ".join(self.names),
+                self.comment
+                )
         elif self.entry_type == 'comment':
             return "TYPE = {0}, COMMENT = {1}".format(self.entry_type, self.comment)
         elif self.entry_type == 'blank':
@@ -112,15 +117,23 @@ class HostsEntry(object):
         :param entry: A line from the hosts file
         :return: An instance of HostsEntry
         """
-        line_parts = entry.strip().split()
+        splited_line = entry.split('#', 1)
+        inline_comment = None
+        if len(splited_line) == 2:
+            inline_comment = splited_line[1].strip()
+            line_parts = splited_line[0].strip().split()
+        else:
+            line_parts = entry.strip().split()
         if is_ipv4(line_parts[0]) and valid_hostnames(line_parts[1:]):
             return HostsEntry(entry_type='ipv4',
                               address=line_parts[0],
-                              names=line_parts[1:])
+                              names=line_parts[1:],
+                              comment=inline_comment)
         elif is_ipv6(line_parts[0]) and valid_hostnames(line_parts[1:]):
             return HostsEntry(entry_type='ipv6',
                               address=line_parts[0],
-                              names=line_parts[1:])
+                              names=line_parts[1:],
+                              comment=inline_comment)
         else:
             return False
 
@@ -200,17 +213,21 @@ class Hosts(object):
                         blanks_written += 1
                     if line.entry_type == 'ipv4':
                         hosts_file.write(
-                            "{0}\t{1}\n".format(
+                            "{0}\t{1}{2}\n".format(
                                 line.address,
                                 ' '.join(line.names),
+                                " # " + line.comment if line.comment else ""
                             )
                         )
                         ipv4_entries_written += 1
                     if line.entry_type == 'ipv6':
                         hosts_file.write(
-                            "{0}\t{1}\n".format(
+                            "{0}\t{1}{2}\n".format(
                                 line.address,
-                                ' '.join(line.names), ))
+                                ' '.join(line.names),
+                                " # " + line.comment if line.comment else ""
+                            )
+                        )
                         ipv6_entries_written += 1
         except:
             raise UnableToWriteHosts()
@@ -246,16 +263,19 @@ class Hosts(object):
                     for name in names:
                         if name in entry.names:
                             return True
+                if comment and comment == entry.comment:
+                    return True
             elif entry.entry_type == 'comment' and entry.comment == comment:
                 return True
         return False
 
-    def remove_all_matching(self, address=None, name=None):
+    def remove_all_matching(self, address=None, name=None, comment=None):
         """
         Remove all HostsEntry instances from the Hosts object
-        where the supplied ip address or name matches
+        where the supplied ip address, name or comment matches
         :param address: An ipv4 or ipv6 address
         :param name: A host name
+        :param comment: A host inline comment
         :return: None
         """
         if self.entries:
@@ -265,16 +285,19 @@ class Hosts(object):
                 func = lambda entry: not entry.is_real_entry() or entry.address != address
             elif name:
                 func = lambda entry: not entry.is_real_entry() or name not in entry.names
+            elif comment:
+                func = lambda entry: not entry.is_real_entry() or entry.comment != comment
             else:
-                raise ValueError('No address or name was specified for removal.')
+                raise ValueError('No address name or comment was specified for removal.')
             self.entries = list(filter(func, self.entries))
 
-    def find_all_matching(self, address=None, name=None):
+    def find_all_matching(self, address=None, name=None, comment=None):
         """
         Return all HostsEntry instances from the Hosts object
         where the supplied ip address or name matches
         :param address: An ipv4 or ipv6 address
         :param name: A host name
+        :param comment: A host inline comment
         :return: HostEntry instances
         """
         results = []
@@ -288,6 +311,8 @@ class Hosts(object):
                 elif address and address == entry.address:
                     results.append(entry)
                 elif name in entry.names:
+                    results.append(entry)
+                elif comment and comment == entry.comment:
                     results.append(entry)
         return results
 
@@ -463,14 +488,19 @@ class Hosts(object):
                     elif entry_type == "blank":
                         self.entries.append(HostsEntry(entry_type="blank"))
                     elif entry_type in ("ipv4", "ipv6"):
-                        chunked_entry = hosts_entry.split()
+                        splited_entry = hosts_entry.split('#', 1)
+                        chunked_entry = splited_entry[0].split()
+                        comment = None
+                        if len(splited_entry) == 2:
+                            comment = splited_entry[1].strip()
                         stripped_name_list = [name.strip() for name in chunked_entry[1:]]
 
                         self.entries.append(
                             HostsEntry(
                                 entry_type=entry_type,
                                 address=chunked_entry[0].strip(),
-                                names=stripped_name_list))
+                                names=stripped_name_list,
+                                comment=comment))
         except IOError:
             return {'result': 'failed',
                     'message': 'Cannot read: {0}.'.format(self.hosts_path)}
