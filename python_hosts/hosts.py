@@ -255,18 +255,15 @@ class Hosts(object):
         :param comment: A comment to search for
         :return: True if a supplied address, name, or comment is found. Otherwise, False.
         """
-        for entry in self.entries:
-            if entry.entry_type in ('ipv4', 'ipv6'):
-                if address and address == entry.address:
-                    return True
-                if names:
-                    for name in names:
-                        if name in entry.names:
-                            return True
-                if comment and comment == entry.comment:
-                    return True
-            elif entry.entry_type == 'comment' and entry.comment == comment:
+        for name in (names or [None]):
+            if self.find_all_matching(address=address, name=name, comment=comment):
                 return True
+
+        for entry in self.entries:
+            if entry.entry_type == 'comment' and entry.comment == comment:
+                return True
+            # elif entry.entry_type in ('ipv4', 'ipv6'):
+            #     pass # already covered above
         return False
 
     def remove_all_matching(self, address=None, name=None, comment=None):
@@ -278,18 +275,17 @@ class Hosts(object):
         :param comment: A host inline comment
         :return: None
         """
-        if self.entries:
-            if address and name:
-                func = lambda entry: not entry.is_real_entry() or (entry.address != address and name not in entry.names)
-            elif address:
-                func = lambda entry: not entry.is_real_entry() or entry.address != address
-            elif name:
-                func = lambda entry: not entry.is_real_entry() or name not in entry.names
-            elif comment:
-                func = lambda entry: not entry.is_real_entry() or entry.comment != comment
-            else:
-                raise ValueError('No address name or comment was specified for removal.')
-            self.entries = list(filter(func, self.entries))
+        if address or name or comment:
+            pass
+        else:
+            raise ValueError('No address, name or comment was specified for removal.')
+
+        result = self.find_all_matching(
+            address=address,
+            name=name,
+            comment=comment
+            )
+        self.entries = list(filter(lambda x: x not in result, self.entries))
 
     def find_all_matching(self, address=None, name=None, comment=None):
         """
@@ -301,19 +297,20 @@ class Hosts(object):
         :return: HostEntry instances
         """
         results = []
-        if self.entries:
+        if address or name or comment:
             for entry in self.entries:
                 if not entry.is_real_entry():
                     continue
-                if address and name:
-                    if address == entry.address and name in entry.names:
-                        results.append(entry)
-                elif address and address == entry.address:
-                    results.append(entry)
-                elif name in entry.names:
-                    results.append(entry)
-                elif comment and comment == entry.comment:
-                    results.append(entry)
+                if address:
+                    if address != entry.address:
+                        continue
+                if name:
+                    if name not in entry.names:
+                        continue
+                if comment:
+                    if comment != entry.comment:
+                        continue
+                results.append(entry)
         return results
 
     def import_url(self, url=None, force=None):
