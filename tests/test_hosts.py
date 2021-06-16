@@ -12,11 +12,11 @@ from python_hosts.hosts import Hosts, HostsEntry
 from python_hosts import exception
 
 
-def test_find_all_matching_by_name_and_address(tmpdir):
+def test_find_all_matching_by_name_address_comment(tmpdir):
     """
     Test all items with matching matching names and addresses are returned
     """
-    entries = '1.2.1.1 example.com example2.com\n# this is a comment\n\n3.4.5.6 random.com example2.com\n'
+    entries = '1.2.1.1 example.com example2.com # comment called 04\n# this is a comment\n\n3.4.5.6 random.com example2.com\n10.10.10.10 comment # comment called 04'
     hosts_file = tmpdir.mkdir("etc").join("hosts")
     hosts_file.write(entries)
     hosts_entries = Hosts(path=hosts_file.strpath)
@@ -26,6 +26,13 @@ def test_find_all_matching_by_name_and_address(tmpdir):
     assert len(hosts_matching_address) == 1  # 1 entry matches 1.2.1.1
     hosts_matching_address = hosts_entries.find_all_matching(name="example2.com", address="1.2.1.1")
     assert len(hosts_matching_address) == 1  # 1 entry matches 1.2.1.1 with name example2.com
+    # comment
+    hosts_matching_comment = hosts_entries.find_all_matching(comment='comment called 04')
+    assert len(hosts_matching_comment) == 2  # 2 entries
+    hosts_matching_comment = hosts_entries.find_all_matching(address='1.2.1.1', comment='comment called 04')
+    assert len(hosts_matching_comment) == 1  # 1 entry
+    hosts_matching_comment = hosts_entries.find_all_matching(name='example2.com', comment='comment called 04')
+    assert len(hosts_matching_comment) == 1  # 1 entry
 
 
 def test_merge_names(tmpdir):
@@ -60,7 +67,6 @@ def test_add_comments(tmpdir):
     assert not hosts_entries.exists(address='3.4.5.6')
     assert hosts_entries.exists(comment='# an example comment')
     assert hosts_entries.exists(comment='# another example comment')
-    print(hosts_entries)
     assert hosts_entries.exists(comment='more comments')
     assert hosts_entries.exists(names=['example.com'])
     # check the entries can be written and then read correctly
@@ -160,6 +166,20 @@ def test_remove_existing_entry_using_address_only(tmpdir):
     assert not hosts_entries.exists(address='1.2.3.4')
 
 
+def test_remove_existing_entry_using_comment_only(tmpdir):
+    """
+    Test removal of an existing entry using ip4 address only
+    """
+    entries = '1.2.3.4 example.com example # this is a comment\n'
+    hosts_file = tmpdir.mkdir("etc").join("hosts")
+    hosts_file.write(entries)
+    hosts_entries = Hosts(path=hosts_file.strpath)
+    assert hosts_entries.exists(address='1.2.3.4')
+    assert hosts_entries.exists(names=['example.com'])
+    hosts_entries.remove_all_matching(comment='this is a comment')
+    assert not hosts_entries.exists(address='1.2.3.4')
+
+
 def get_username():
     return getpass.getuser()
 
@@ -171,6 +191,9 @@ def test_hosts_str(tmpdir):
     hosts_file.write("6.6.6.6\texample.com\n")
     hosts = Hosts(path=hosts_file.strpath)
     assert (str(hosts)) == "hosts_path={0}, TYPE=ipv4, ADDR=6.6.6.6, NAMES=example.com, COMMENT=None".format(hosts_file.strpath)
+    hosts_file.write("7.7.7.7\texample.com #6.6.6.6\n")
+    hosts = Hosts(path=hosts_file.strpath)
+    assert (str(hosts)) == "hosts_path={0}, TYPE=ipv4, ADDR=7.7.7.7, NAMES=example.com, COMMENT=6.6.6.6".format(hosts_file.strpath)
 
 
 def test_hosts_write_to_custom_path(tmpdir):
@@ -190,6 +213,13 @@ def test_hosts_repr(tmpdir):
     """ Test that the repr method returns a useful representation of the hosts object
     """
     hosts_file = tmpdir.mkdir("etc").join("hosts")
+    hosts_file.write("6.6.6.6\texample.com\n")
+    hosts = Hosts(path=hosts_file.strpath)
+    assert (repr(hosts)) == "Hosts(hosts_path='{0}', " \
+                            "entries=[HostsEntry(entry_type='ipv4', " \
+                            "address='6.6.6.6', " \
+                            "names=['example.com'], " \
+                            "comment='None')])".format(hosts_file.strpath)
     hosts_file.write("6.6.6.6\texample.com # devilish ip...\n")
     hosts = Hosts(path=hosts_file.strpath)
     assert (repr(hosts)) == "Hosts(hosts_path='{0}', " \
@@ -330,9 +360,26 @@ def test_add_single_ipv6_host(tmpdir):
     hosts_file = tmpdir.mkdir("etc").join("hosts")
     hosts_file.write("127.0.0.1\tlocalhost\n")
     hosts_entries = Hosts(path=hosts_file.strpath)
+    assert not hosts_entries.exists(address='::1')
     new_entry = HostsEntry(entry_type='ipv6', address='::1', names=['localhost6.localdomain6', 'localhost6'])
     hosts_entries.add(entries=[new_entry], force=False)
     assert hosts_entries.exists(address='::1')
+
+def test_add_single_ipv6_host_with_comment(tmpdir):
+    """
+    Test addition of an ipv6 entry with comment
+    """
+    hosts_file = tmpdir.mkdir("etc").join("hosts")
+    hosts_file.write("127.0.0.1\tlocalhost\n")
+    hosts_entries = Hosts(path=hosts_file.strpath)
+    assert not hosts_entries.exists(address='::1')
+    assert not hosts_entries.exists(comment='hello world!')
+    assert not hosts_entries.exists(address='::1', comment='hello world!')
+    new_entry = HostsEntry(entry_type='ipv6', address='::1', names=['localhost6.localdomain6', 'localhost6'], comment='hello world!')
+    hosts_entries.add(entries=[new_entry], force=False)
+    assert hosts_entries.exists(address='::1')
+    assert hosts_entries.exists(comment='hello world!')
+    assert hosts_entries.exists(address='::1', comment='hello world!')
 
 
 def test_replace_ipv4_host_where_name_differs(tmpdir):
@@ -355,9 +402,28 @@ def test_add_single_ipv4_host(tmpdir):
     hosts_file = tmpdir.mkdir("etc").join("hosts")
     hosts_file.write("127.0.0.1\tlocalhost\n")
     hosts = Hosts(path=hosts_file.strpath)
+    assert not hosts.exists(address='123.123.123.123')
     new_entry = HostsEntry(entry_type='ipv4', address='123.123.123.123', names=['test.example.com'])
     hosts.add(entries=[new_entry])
     assert hosts.exists(address='123.123.123.123')
+
+
+def test_add_single_ipv4_host_with_comment(tmpdir):
+    """
+    Test the addition of an ipv4 host with comment succeeds
+    """
+    hosts_file = tmpdir.mkdir("etc").join("hosts")
+    hosts_file.write("127.0.0.1\tlocalhost\n")
+    hosts = Hosts(path=hosts_file.strpath)
+    assert not hosts.exists(address='123.123.123.123')
+    assert not hosts.exists(comment='hello world!')
+    assert not hosts.exists(address='123.123.123.123', comment='hello world!')
+    new_entry = HostsEntry(entry_type='ipv4', address='123.123.123.123', names=['test.example.com'], comment='hello world!')
+    hosts.add(entries=[new_entry])
+    assert hosts.exists(address='123.123.123.123')
+    assert hosts.exists(comment='hello world!')
+    assert hosts.exists(address='123.123.123.123', comment='hello world!')
+    assert not hosts.exists(address='123.123.123.123', comment='hello world')
 
 
 def test_import_from_url(tmpdir):
