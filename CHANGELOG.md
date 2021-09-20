@@ -1,6 +1,10 @@
 Changelog
 =========
 
+1.0.2
+
+- Fix issue where writing host file may fail on Windows. Thanks lucasfcnunes (https://github.com/lucasfcnunes) 
+
 1.0.1
 
 - Add function to enable finding host entries by name or address
