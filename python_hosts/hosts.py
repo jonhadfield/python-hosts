@@ -117,11 +117,11 @@ class HostsEntry(object):
         :param entry: A line from the hosts file
         :return: An instance of HostsEntry
         """
-        splited_line = entry.split('#', 1)
+        split_line = entry.split('#', 1)
         inline_comment = None
-        if len(splited_line) == 2:
-            inline_comment = splited_line[1].strip()
-            line_parts = splited_line[0].strip().split()
+        if len(split_line) == 2:
+            inline_comment = split_line[1].strip()
+            line_parts = split_line[0].strip().split()
         else:
             line_parts = entry.strip().split()
         if is_ipv4(line_parts[0]) and valid_hostnames(line_parts[1:]):
@@ -485,11 +485,11 @@ class Hosts(object):
                     elif entry_type == "blank":
                         self.entries.append(HostsEntry(entry_type="blank"))
                     elif entry_type in ("ipv4", "ipv6"):
-                        splited_entry = hosts_entry.split('#', 1)
-                        chunked_entry = splited_entry[0].split()
+                        split_entry = hosts_entry.split('#', 1)
+                        chunked_entry = split_entry[0].split()
                         comment = None
-                        if len(splited_entry) == 2:
-                            comment = splited_entry[1].strip()
+                        if len(split_entry) == 2:
+                            comment = split_entry[1].strip()
                         stripped_name_list = [name.strip() for name in chunked_entry[1:]]
 
                         self.entries.append(
