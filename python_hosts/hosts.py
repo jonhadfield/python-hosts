@@ -321,11 +321,12 @@ class Hosts(object):
                 'add_result': add_result,
                 'write_result': write_result}
 
-    def import_file(self, import_file_path=None):
+    def import_file(self, import_file_path=None, allow_address_duplication=False, allow_name_duplication=False):
         """
         Read a list of host entries from a file, convert them into instances
         of HostsEntry and then append to the list of entries in Hosts
         :param import_file_path: The path to the file containing the host entries
+        :param allow_name_duplication: Add entry even if name already exists
         :return: Counts reflecting the attempted additions
         """
         skipped = 0
@@ -345,7 +346,10 @@ class Hosts(object):
                             import_entries.append(import_entry)
                         else:
                             invalid_count += 1
-            add_result = self.add(entries=import_entries)
+            print("here with:", import_entries)
+            add_result = self.add(entries=import_entries,
+                                  allow_address_duplication=allow_address_duplication,
+                                  allow_name_duplication=allow_name_duplication)
             write_result = self.write()
             return {'result': 'success',
                     'skipped': skipped,
@@ -356,12 +360,16 @@ class Hosts(object):
             return {'result': 'failed',
                     'message': 'Cannot read: file {0}.'.format(import_file_path)}
 
-    def add(self, entries=None, force=False, allow_address_duplication=False, merge_names=False):
+    def add(self, entries=None, force=False,
+            allow_address_duplication=False,
+            allow_name_duplication=False,
+            merge_names=False):
         """
         Add instances of HostsEntry to the instance of Hosts.
         :param entries: A list of instances of HostsEntry
         :param force: Remove matching before adding
         :param allow_address_duplication: Allow using multiple entries for same address
+        :param allow_name_duplication: Allow using multiple entries with the same name
         :param merge_names: Merge names where address already exists
         :return: The counts of successes and failures
         """
@@ -386,7 +394,7 @@ class Hosts(object):
                 import_entries.append(entry)
             elif entry.address in ('0.0.0.0', '127.0.0.1') or allow_address_duplication:
                 # Allow duplicates entries for addresses used for adblocking
-                if set(entry.names).intersection(existing_names):
+                if not allow_name_duplication and set(entry.names).intersection(existing_names):
                     if force:
                         for name in entry.names:
                             self.remove_all_matching(name=name)
@@ -396,7 +404,8 @@ class Hosts(object):
                 else:
                     import_entries.append(entry)
             elif entry.address in existing_addresses:
-                if not any((force, merge_names)):
+                print("address matches existing")
+                if not any((force, merge_names, allow_address_duplication)):
                     duplicate_count += 1
                 elif merge_names:
                     # get the last entry with matching address
@@ -416,7 +425,7 @@ class Hosts(object):
                     self.remove_all_matching(address=entry.address)
                     replaced_count += 1
                     import_entries.append(entry)
-            elif set(entry.names).intersection(existing_names):
+            elif not allow_name_duplication and set(entry.names).intersection(existing_names):
                 if not force:
                     duplicate_count += 1
                 else:
@@ -425,6 +434,7 @@ class Hosts(object):
                     replaced_count += 1
                     import_entries.append(entry)
             else:
+                print("adding entry", entry)
                 import_entries.append(entry)
 
         for item in import_entries:

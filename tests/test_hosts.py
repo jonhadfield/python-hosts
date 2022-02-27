@@ -11,6 +11,52 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from python_hosts.hosts import Hosts, HostsEntry
 from python_hosts import exception
 
+def test_add_duplicate_name_with_allow_duplicate_names_set(tmpdir):
+    """
+    Test that adding an entry with a duplicate name succeeds with allow_duplicate_name option
+    """
+    hosts_file = tmpdir.mkdir("etc").join("hosts")
+    hosts_file.write("82.132.132.132\texample.com\texample\n")
+    hosts_entries = Hosts(path=hosts_file.strpath)
+    new_entry_1 = HostsEntry(entry_type="ipv4", address="1.2.3.4", names=["new.example.com","example.com"])
+    new_entry_2 = HostsEntry(entry_type="ipv4", address="1.2.3.4", names=["an.example.com","other.example.com"])
+    hosts_entries.add([new_entry_1,new_entry_2], allow_name_duplication=True, allow_address_duplication=False)
+    assert hosts_entries.count() == 3
+    assert hosts_entries.exists(address="1.2.3.4",names=["new.example.com","example.com"])
+    assert hosts_entries.exists(address="82.132.132.132",names=["example.com","example"])
+    assert not hosts_entries.exists(address="1.2.3.4", names=["an.example.com","other.example.com"])
+
+def test_add_duplicate_name_with_allow_duplicate_names_and_addresses_set(tmpdir):
+    """
+    Test that adding an entry with a duplicate and address name succeeds with allow_duplicate_name and allow_duplicate_address options
+    """
+    hosts_file = tmpdir.mkdir("etc").join("hosts")
+    hosts_file.write("82.132.132.132\texample.com\texample\n")
+    hosts_entries = Hosts(path=hosts_file.strpath)
+    new_entry_1 = HostsEntry(entry_type="ipv4", address="1.2.3.4", names=["new.example.com","example.com"])
+    new_entry_2 = HostsEntry(entry_type="ipv4", address="1.2.3.4", names=["an.example.com","new.example.com"])
+    hosts_entries.add([new_entry_1,new_entry_2], allow_name_duplication=True)
+    assert hosts_entries.count() == 3
+    assert hosts_entries.exists(address="1.2.3.4",names=["new.example.com","example.com"])
+    assert hosts_entries.exists(address="82.132.132.132",names=["example.com","example"])
+#
+# def test_import_file_returns_duplicate_correctly(tmpdir):
+#     """
+#     Test that adding an entry that exists will return a duplicate count of 1
+#     and a write count of 2 (where existing 82.132.132.132 is written along with
+#     new 10.10.10.10 entry)
+#     """
+#     hosts_file = tmpdir.mkdir("etc").join("hosts")
+#     hosts_file.write("82.132.132.132\texample.com\texample\n")
+#     import_file = tmpdir.mkdir("input").join("infile")
+#     import_file.write("10.10.10.10\thello.com\n82.132.132.132\texample.com\texample\n")
+#     hosts_entries = Hosts(path=hosts_file.strpath)
+#     feedback = hosts_entries.import_file(import_file_path=import_file.strpath)
+#     add_result = feedback.get('add_result')
+#     write_result = feedback.get('write_result')
+#     assert add_result.get('duplicate_count') == 1
+#     assert write_result.get('ipv4_entries_written') == 2
+
 
 def test_find_all_matching_by_name_and_address(tmpdir):
     """
