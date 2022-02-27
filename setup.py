@@ -52,7 +52,6 @@ setup(
     description='A hosts file manager library written in python',
     long_description='A hosts file manager library written in python',
     packages=['python_hosts'],
-    install_requires=['win_inet_pton'],
     platforms='any',
     license='MIT',
     classifiers=[
