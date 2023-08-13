@@ -70,8 +70,8 @@ class HostsEntry(object):
         return self.entry_type in ('ipv4', 'ipv6')
 
     def __repr__(self):
-        return "HostsEntry(entry_type=\'{0}\', address=\'{1}\', " \
-               "names={2}, comment=\'{3}\')".format(
+        return "HostsEntry(entry_type={0!r}, address={1!r}, " \
+               "names={2!r}, comment={3!r})".format(
                    self.entry_type,
                    self.address,
                    self.names,
