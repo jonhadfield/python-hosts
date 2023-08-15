@@ -229,7 +229,7 @@ class Hosts(object):
                             )
                         )
                         ipv6_entries_written += 1
-        except:
+        except Exception:
             raise UnableToWriteHosts()
         return {'total_written': written_count + 1,
                 'comments_written': comments_written,
