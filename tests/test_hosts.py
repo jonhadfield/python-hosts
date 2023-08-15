@@ -14,7 +14,7 @@ from python_hosts import exception
 
 def test_find_all_matching_by_name_address_comment(tmpdir):
     """
-    Test all items with matching matching names and addresses are returned
+    Test all items with matching names and addresses are returned
     """
     entries = '1.2.1.1 example.com example2.com # comment called 04\n# this is a comment\n\n3.4.5.6 random.com example2.com\n10.10.10.10 comment # comment called 04'
     hosts_file = tmpdir.mkdir("etc").join("hosts")
