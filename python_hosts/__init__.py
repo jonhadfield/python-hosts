@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-This package contains all of the modules utilised by the python-hosts library.
+This package contains all the modules utilised by the python-hosts library.
 
 hosts: Contains the Hosts and HostsEntry classes that represent instances of a hosts file and it's individual lines/entries
 
