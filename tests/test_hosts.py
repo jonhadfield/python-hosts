@@ -219,7 +219,7 @@ def test_hosts_repr(tmpdir):
                             "entries=[HostsEntry(entry_type='ipv4', " \
                             "address='6.6.6.6', " \
                             "names=['example.com'], " \
-                            "comment='None')])".format(hosts_file.strpath)
+                            "comment=None)])".format(hosts_file.strpath)
     hosts_file.write("6.6.6.6\texample.com # devilish ip...\n")
     hosts = Hosts(path=hosts_file.strpath)
     assert (repr(hosts)) == "Hosts(hosts_path='{0}', " \
