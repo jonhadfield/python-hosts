@@ -140,9 +140,9 @@ class HostsEntry(object):
 
 class Hosts(object):
     """ A hosts file. """
-    __slots__ = ['entries', 'hosts_path']
+    __slots__ = ['path','entries']
 
-    def __init__(self, path=None):
+    def __init__(self, path=None, entries=None):
         """
         Initialise an instance of a hosts file
         :param path: The filesystem path of the hosts file to manage
@@ -151,18 +151,22 @@ class Hosts(object):
 
         self.entries = []
         if path:
-            self.hosts_path = path
+            self.path = path
         else:
-            self.hosts_path = self.determine_hosts_path()
-        self.populate_entries()
+            self.path = self.determine_hosts_path()
+
+        if entries:
+            self.entries = entries
+        else:
+            self.populate_entries()
 
     def __repr__(self):
-        return 'Hosts(hosts_path={0!r}, entries={1!r})'.format(
-            self.hosts_path, self.entries
+        return 'Hosts(path=\'{0}\', entries={1!r})'.format(
+            self.path, self.entries
         )
 
     def __str__(self):
-        output = ('hosts_path={0}, '.format(self.hosts_path))
+        output = ('path={0}\n'.format(self.path))
         for entry in self.entries:
             output += str(entry)
         return output
@@ -203,7 +207,7 @@ class Hosts(object):
         if path:
             output_file_path = path
         else:
-            output_file_path = self.hosts_path
+            output_file_path = self.path
         try:
             with open(output_file_path, mode) as hosts_file:
                 for written_count, line in enumerate(self.entries):
@@ -480,7 +484,7 @@ class Hosts(object):
         :return: None
         """
         try:
-            with open(self.hosts_path, 'r') as hosts_file:
+            with open(self.path, 'r') as hosts_file:
                 hosts_entries = [line for line in hosts_file]
                 for hosts_entry in hosts_entries:
                     entry_type = HostsEntry.get_entry_type(hosts_entry)
@@ -508,4 +512,4 @@ class Hosts(object):
                                 comment=comment))
         except IOError:
             return {'result': 'failed',
-                    'message': 'Cannot read: {0}.'.format(self.hosts_path)}
+                    'message': 'Cannot read: {0}.'.format(self.path)}

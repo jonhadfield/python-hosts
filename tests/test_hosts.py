@@ -212,12 +212,12 @@ def test_hosts_str(tmpdir):
     hosts_file = tmpdir.mkdir("etc").join("hosts")
     hosts_file.write("6.6.6.6\texample.com\n")
     hosts = Hosts(path=hosts_file.strpath)
-    assert (str(hosts)) == ("hosts_path={0}, TYPE=ipv4, ADDR=6.6.6.6, "
+    assert (str(hosts)) == ("path={0}\nTYPE=ipv4, ADDR=6.6.6.6, "
                             "NAMES=example.com, COMMENT=None"
                             ).format(hosts_file.strpath)
     hosts_file.write("7.7.7.7\texample.com #6.6.6.6\n")
     hosts = Hosts(path=hosts_file.strpath)
-    assert (str(hosts)) == ("hosts_path={0}, TYPE=ipv4, ADDR=7.7.7.7, "
+    assert (str(hosts)) == ("path={0}\nTYPE=ipv4, ADDR=7.7.7.7, "
                             "NAMES=example.com, COMMENT=6.6.6.6").format(
         hosts_file.strpath)
 
@@ -241,21 +241,20 @@ def test_hosts_repr(tmpdir):
      of the hosts object
     """
     hosts_file = tmpdir.mkdir("etc").join("hosts")
-    hosts_path = hosts_file.replace('\\\\', '\\')
     hosts_file.write("6.6.6.6\texample.com\n")
     hosts = Hosts(path=hosts_file.strpath)
-    assert (repr(hosts)) == "Hosts(hosts_path='{0}', " \
+    assert (repr(hosts)) == "Hosts(path='{0}', " \
                             "entries=[HostsEntry(entry_type='ipv4', " \
                             "address='6.6.6.6', " \
                             "names=['example.com'], " \
-                            "comment=None)])".format(hosts_path)
+                            "comment=None)])".format(hosts_file.strpath)
     hosts_file.write("6.6.6.6\texample.com # devilish ip...\n")
     hosts = Hosts(path=hosts_file.strpath)
-    assert (repr(hosts)) == "Hosts(hosts_path='{0}', " \
+    assert (repr(hosts)) == "Hosts(path='{0}', " \
                             "entries=[HostsEntry(entry_type='ipv4', " \
                             "address='6.6.6.6', " \
                             "names=['example.com'], " \
-                            "comment='devilish ip...')])".format(hosts_path)
+                            "comment='devilish ip...')])".format(hosts_file.strpath)
 
 
 def test_import_from_url_counters_for_part_success(tmpdir):
