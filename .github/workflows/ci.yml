@@ -16,7 +16,7 @@ jobs:
       - name: Test with tox
         run: tox -e py27
   py3:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ ubuntu-latest, macos-latest, windows-latest ]
