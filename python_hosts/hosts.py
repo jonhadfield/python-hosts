@@ -166,9 +166,9 @@ class Hosts(object):
         )
 
     def __str__(self):
-        output = ('path={0}\n'.format(self.path))
+        output = ('PATH:{0}\n'.format(self.path))
         for entry in self.entries:
-            output += str(entry)
+            output += str(entry) + "\n"
         return output
 
     def count(self):

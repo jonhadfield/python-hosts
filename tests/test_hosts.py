@@ -212,13 +212,13 @@ def test_hosts_str(tmpdir):
     hosts_file = tmpdir.mkdir("etc").join("hosts")
     hosts_file.write("6.6.6.6\texample.com\n")
     hosts = Hosts(path=hosts_file.strpath)
-    assert (str(hosts)) == ("path={0}\nTYPE=ipv4, ADDR=6.6.6.6, "
-                            "NAMES=example.com, COMMENT=None"
+    assert (str(hosts)) == ("PATH:{0}\nTYPE=ipv4, ADDR=6.6.6.6, "
+                            "NAMES=example.com, COMMENT=None\n"
                             ).format(hosts_file.strpath)
     hosts_file.write("7.7.7.7\texample.com #6.6.6.6\n")
     hosts = Hosts(path=hosts_file.strpath)
-    assert (str(hosts)) == ("path={0}\nTYPE=ipv4, ADDR=7.7.7.7, "
-                            "NAMES=example.com, COMMENT=6.6.6.6").format(
+    assert (str(hosts)) == ("PATH:{0}\nTYPE=ipv4, ADDR=7.7.7.7, "
+                            "NAMES=example.com, COMMENT=6.6.6.6\n").format(
         hosts_file.strpath)
 
 
