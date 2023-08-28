@@ -33,7 +33,7 @@ jobs:
           pip install tox tox-gh-actions
       - name: Install python 3 test requirements
         run: |
-          if [ -f test-requirements.txt ]; then pip install -r test-requirements.txt; fi
+          pip install -r test-requirements.txt
       - name: Install ruff
         run: |
           pip install ruff
