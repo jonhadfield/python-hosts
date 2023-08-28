@@ -1,6 +1,8 @@
 Changelog
 =========
-
+1.0.4
+- Fix repr and str output. Thanks [trim21](https://github.com/trim21).
+- Allow entries to be specified in initialisation.
 
 1.0.3
 - Enable in-line comments in host entries. Thanks [lucasfcnunes](https://github.com/lucasfcnunes).
