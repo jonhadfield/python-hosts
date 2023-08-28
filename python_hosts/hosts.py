@@ -157,7 +157,9 @@ class Hosts(object):
         self.populate_entries()
 
     def __repr__(self):
-        return 'Hosts(hosts_path={0!r}, entries={1!r})'.format(self.hosts_path, self.entries)
+        return 'Hosts(hosts_path={0!r}, entries={1!r})'.format(
+            self.hosts_path, self.entries
+        )
 
     def __str__(self):
         output = ('hosts_path={0}, '.format(self.hosts_path))
@@ -249,11 +251,13 @@ class Hosts(object):
 
     def exists(self, address=None, names=None, comment=None):
         """
-        Determine if the supplied address and/or names, or comment, exists in a HostsEntry within Hosts
+        Determine if the supplied address and/or names, or comment, exists in
+         a HostsEntry within Hosts
         :param address: An ipv4 or ipv6 address to search for
         :param names: A list of names to search for
         :param comment: A comment to search for
-        :return: True if a supplied address, name, or comment is found. Otherwise, False.
+        :return: True if a supplied address, name, or comment is found.
+            Otherwise, False.
         """
         for name in (names or [None]):
             if self.find_all_matching(address=address, name=name, comment=comment):
@@ -290,7 +294,7 @@ class Hosts(object):
     def find_all_matching(self, address=None, name=None, comment=None):
         """
         Return all HostsEntry instances from the Hosts object
-        where the supplied ip address or name matches
+          where the supplied ip address or name matches
         :param address: An ipv4 or ipv6 address
         :param name: A host name
         :param comment: A host inline comment
@@ -315,8 +319,8 @@ class Hosts(object):
 
     def import_url(self, url=None, force=None):
         """
-        Read a list of host entries from a URL, convert them into instances of HostsEntry and
-        then append to the list of entries in Hosts
+        Read a list of host entries from a URL, convert them into instances
+          of HostsEntry and then append to the list of entries in Hosts
         :param url: The URL of where to download a hosts file
         :return: Counts reflecting the attempted additions
         """
@@ -378,12 +382,14 @@ class Hosts(object):
             return {'result': 'failed',
                     'message': 'Cannot read: file {0}.'.format(import_file_path)}
 
-    def add(self, entries=None, force=False, allow_address_duplication=False, merge_names=False):
+    def add(self, entries=None, force=False, allow_address_duplication=False,
+            merge_names=False):
         """
         Add instances of HostsEntry to the instance of Hosts.
         :param entries: A list of instances of HostsEntry
         :param force: Remove matching before adding
-        :param allow_address_duplication: Allow using multiple entries for same address
+        :param allow_address_duplication: Allow using multiple entries
+         for same address
         :param merge_names: Merge names where address already exists
         :return: The counts of successes and failures
         """
@@ -468,8 +474,9 @@ class Hosts(object):
 
     def populate_entries(self):
         """
-        Called by the initialiser of Hosts. This reads the entries from the local hosts file,
-        converts them into instances of HostsEntry and adds them to the Hosts list of entries.
+        Called by the initialiser of Hosts. This reads the entries from the
+         local hosts file, converts them into instances of HostsEntry and adds
+         them to the Hosts list of entries.
         :return: None
         """
         try:
@@ -490,7 +497,8 @@ class Hosts(object):
                         comment = None
                         if len(split_entry) == 2:
                             comment = split_entry[1].strip()
-                        stripped_name_list = [name.strip() for name in chunked_entry[1:]]
+                        stripped_name_list = [name.strip() for name in
+                                              chunked_entry[1:]]
 
                         self.entries.append(
                             HostsEntry(
