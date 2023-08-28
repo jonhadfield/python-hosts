@@ -2,4 +2,4 @@ Counter
 importlib
 pytest
 pytest-cov
-PyYAML==5.3.1
+PyYAML==5.4
