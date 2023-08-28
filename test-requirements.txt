@@ -1,4 +1,5 @@
 pytest
 pytest-cov
-PyYAML
+PyYAML==6.0.1
 enum-compat
+tox

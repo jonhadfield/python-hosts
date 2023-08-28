@@ -3,12 +3,27 @@ name: python_hosts
 on: [push]
 
 jobs:
-  build:
+  py27:
+    runs-on: ubuntu-latest
+    container: coatldev/six:latest
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
+        python-version: [ "2.7", "pypy2.7" ]
+    steps:
+      # Ref: https://github.com/actions/runner/issues/652
+      - name: Install dependencies (with no caching)
+        run: |
+          python -m pip install --no-cache-dir --upgrade pip tox
+      - name: Run tests
+        run: |
+          tox
+  py3:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         os: [ ubuntu-latest, macos-latest, windows-latest ]
-        python-version: [ "3.8", "3.9", "3.10", "3.11", "pypy2.7", "pypy3.9" ]
+        python-version: [ "3.8", "3.9", "3.10", "3.11", "pypy3.9" ]
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
@@ -19,20 +34,18 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install tox tox-gh-actions
+      - name: Install python 3 test requirements
+        run: |
           if [ -f test-requirements.txt ]; then pip install -r test-requirements.txt; fi
       - name: Install ruff
         run: |
           pip install ruff
-        if:
-          contains (${{ matrix.python-version }}, '3')
       - name: Lint with ruff
         run: |
           # stop the build if there are Python syntax errors or undefined names
           ruff --format=github --select=E9,F63,F7,F82 --target-version=py37 .
           # default set of ruff rules with GitHub Annotations
           ruff --format=github --target-version=py37 .
-        if:
-          contains (${{ matrix.python-version }}, '3')
       - name: Test with tox
         run: tox
         env:
