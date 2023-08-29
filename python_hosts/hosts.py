@@ -188,8 +188,7 @@ class Hosts(object):
         if not platform:
             platform = sys.platform
         if platform.startswith('win'):
-            result = r"c:\windows\system32\drivers\etc\hosts"
-            return result
+            return r"c:\windows\system32\drivers\etc\hosts"
         else:
             return '/etc/hosts'
 
