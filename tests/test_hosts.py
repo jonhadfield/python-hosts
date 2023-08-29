@@ -243,14 +243,14 @@ def test_hosts_repr(tmpdir):
     hosts_file = tmpdir.mkdir("etc").join("hosts")
     hosts_file.write("6.6.6.6\texample.com\n")
     hosts = Hosts(path=hosts_file.strpath)
-    assert (repr(hosts)) == "Hosts(path='{0}', " \
+    assert (repr(hosts)) == "Hosts(path={0!r}, " \
                             "entries=[HostsEntry(entry_type='ipv4', " \
                             "address='6.6.6.6', " \
                             "names=['example.com'], " \
                             "comment=None)])".format(hosts_file.strpath)
     hosts_file.write("6.6.6.6\texample.com # devilish ip...\n")
     hosts = Hosts(path=hosts_file.strpath)
-    assert (repr(hosts)) == "Hosts(path='{0}', " \
+    assert (repr(hosts)) == "Hosts(path={0!r}, " \
                             "entries=[HostsEntry(entry_type='ipv4', " \
                             "address='6.6.6.6', " \
                             "names=['example.com'], " \
@@ -627,7 +627,7 @@ def test_existing_comments_and_blanks_are_preserved(tmpdir):
 
 def test_hostsentry_initialisation_failure_with_invalid_type():
     """
-    Test initialiser returns an exception if the type is invalid 
+    Test initialiser returns an exception if the type is invalid
     """
     with pytest.raises(Exception):
         HostsEntry()
@@ -754,7 +754,7 @@ def test_file_import_fails_when_not_readable(tmpdir):
 
 
 def test_remove_all_matching_multiple(tmpdir):
-    """ 
+    """
     Test removal of multiple entries with a common alias
     """
     hosts_file = tmpdir.mkdir("etc").join("hosts")
