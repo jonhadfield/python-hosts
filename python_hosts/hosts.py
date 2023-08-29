@@ -161,7 +161,7 @@ class Hosts(object):
             self.populate_entries()
 
     def __repr__(self):
-        return 'Hosts(path=\'{0}\', entries={1!r})'.format(
+        return 'Hosts(path={0!r}, entries={1!r})'.format(
             self.path, self.entries
         )
 
