@@ -1,5 +1,4 @@
 pytest
 pytest-cov
-PyYAML==5.4
 enum-compat
 tox

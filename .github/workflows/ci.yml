@@ -12,6 +12,8 @@ jobs:
       # Ref: https://github.com/actions/runner/issues/652
       - name: Install dependencies (with no caching)
         run: |
+          pip install "cython<3.0.0" wheel
+          pip install "pyyaml==5.4.1" --no-build-isolation
           python -m pip install --no-cache-dir --upgrade pip tox
       - name: Test with tox
         run: tox -e py27
@@ -30,6 +32,8 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
+          pip install "cython<3.0.0" wheel
+          pip install "pyyaml==5.4.1" --no-build-isolation
           pip install tox tox-gh-actions
       - name: Install python 3 test requirements
         run: |
