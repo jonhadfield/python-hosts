@@ -1,19 +1,26 @@
 Changelog
 =========
-1.0.4
+
+1.0.5  
+
+- Fix repr and str output. Thanks [trim21](https://github.com/trim21).  
+- Bump dependencies and fix tests  
+
+1.0.4  
+
 - Fix repr and str output. Thanks [trim21](https://github.com/trim21).
 - Allow entries to be specified in initialisation.
 
-1.0.3
+1.0.3  
+
 - Enable in-line comments in host entries. Thanks [lucasfcnunes](https://github.com/lucasfcnunes).
 - Remove remnants of win-inet-pton library. Thanks [sebalis](https://github.com/sebalis).
 
-1.0.2
+1.0.2  
 
 - Fix issue where writing host file may fail on Windows. Thanks [lucasfcnunes](https://github.com/lucasfcnunes). 
 
 1.0.1
-
 - Add function to enable finding host entries by name or address
 - Fix deprecation warnings. Thanks [tirkarthi](https://github.com/tirkarthi).
 
