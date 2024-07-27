@@ -1,6 +1,10 @@
 Changelog
 =========
 
+1.0.7
+
+- Fix import file issue where inline comments would be stripped. Thanks [mago960806](https://github.com/mago960806).
+
 1.0.6
 
 - Add option to allow name duplication. Thanks [moonbuggy](https://github.com/moonbuggy).
