@@ -561,6 +561,37 @@ def test_import_file_returns_duplicate_correctly(tmpdir):
     assert write_result.get('ipv4_entries_written') == 2
 
 
+def test_import_file_persists_inline_comments(tmpdir):
+    """
+    Test that importing an entry from a file will persist inline comments
+    """
+    hosts_file = tmpdir.mkdir("etc").join("hosts")
+    hosts_file.write("82.132.132.132\texample.com\texample\n")
+    import_file = tmpdir.mkdir("input").join("infile")
+    import_file.write("10.10.10.10\thello.com # testing\n")
+    hosts_entries = Hosts(path=hosts_file.strpath)
+    feedback = hosts_entries.import_file(import_file_path=import_file.strpath)
+    write_result = feedback.get('write_result')
+    assert write_result.get('ipv4_entries_written') == 2
+    assert hosts_entries.entries[1].comment == 'testing'
+
+
+def test_import_file_persists_comments(tmpdir):
+    """
+    Test that importing an entry from a file will persist comments
+    """
+    hosts_file = tmpdir.mkdir("etc").join("hosts")
+    hosts_file.write("# 82.132.132.132\texample.com\texample\n")
+    import_file = tmpdir.mkdir("input").join("infile")
+    import_file.write("10.10.10.10\thello.com # testing\n")
+    hosts_entries = Hosts(path=hosts_file.strpath)
+    feedback = hosts_entries.import_file(import_file_path=import_file.strpath)
+    write_result = feedback.get('write_result')
+    assert write_result.get('ipv4_entries_written') == 1
+    assert write_result.get('comments_written') == 1
+    assert hosts_entries.entries[1].comment == 'testing'
+
+
 def test_addition_of_ipv6_entry_where_matching_name_exists_and_force_false(tmpdir):
     """
     Test no replacement of an ipv6 entry where the address is different
