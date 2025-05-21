@@ -2,7 +2,7 @@
 import os
 import sys
 
-from python_hosts.utils import is_ipv4, is_ipv6, valid_hostnames
+from python_hosts.utils import is_ipv4, is_ipv6, valid_hostnames, dedupe_list, is_readable
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 
@@ -52,3 +52,17 @@ def test_hostname_validation_failure_with_leading_hyphen():
     Test function returns False if a hostname with a leading hyphen is specified
     """
     assert not valid_hostnames(['example.com', '-example'])
+
+
+def test_dedupe_list_preserves_order():
+    """Ensure dedupe_list removes duplicates while keeping order."""
+    items = ['a', 'b', 'a', 'c', 'b']
+    assert dedupe_list(items) == ['a', 'b', 'c']
+
+
+def test_is_readable(tmpdir):
+    """Check is_readable returns expected values."""
+    readable = tmpdir.join('file')
+    readable.write('data')
+    assert is_readable(readable.strpath)
+    assert not is_readable(readable.strpath + '_missing')

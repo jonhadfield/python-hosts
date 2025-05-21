@@ -118,24 +118,16 @@ class HostsEntry(object):
         :return: An instance of HostsEntry
         """
         split_line = entry.split('#', 1)
-        inline_comment = None
-        if len(split_line) == 2:
-            inline_comment = split_line[1].strip()
-            line_parts = split_line[0].strip().split()
-        else:
-            line_parts = entry.strip().split()
-        if is_ipv4(line_parts[0]) and valid_hostnames(line_parts[1:]):
-            return HostsEntry(entry_type='ipv4',
-                              address=line_parts[0],
-                              names=line_parts[1:],
+        line = split_line[0].strip().split()
+        inline_comment = split_line[1].strip() if len(split_line) == 2 else None
+
+        if is_ipv4(line[0]) and valid_hostnames(line[1:]):
+            return HostsEntry('ipv4', address=line[0], names=line[1:],
                               comment=inline_comment)
-        elif is_ipv6(line_parts[0]) and valid_hostnames(line_parts[1:]):
-            return HostsEntry(entry_type='ipv6',
-                              address=line_parts[0],
-                              names=line_parts[1:],
+        if is_ipv6(line[0]) and valid_hostnames(line[1:]):
+            return HostsEntry('ipv6', address=line[0], names=line[1:],
                               comment=inline_comment)
-        else:
-            return False
+        return False
 
 
 class Hosts(object):
@@ -187,11 +179,16 @@ class Hosts(object):
         """
         if not platform:
             platform = sys.platform
-        if platform.startswith('win'):
-            result = r"c:\windows\system32\drivers\etc\hosts"
-            return result
-        else:
-            return '/etc/hosts'
+
+        paths = {
+            'win': r"c:\windows\system32\drivers\etc\hosts",
+            'default': '/etc/hosts'
+        }
+
+        for key, value in paths.items():
+            if key != 'default' and platform.startswith(key):
+                return value
+        return paths['default']
 
     def write(self, path=None, mode='w'):
         """
@@ -267,12 +264,8 @@ class Hosts(object):
             if self.find_all_matching(address=address, name=name, comment=comment):
                 return True
 
-        for entry in self.entries:
-            if entry.entry_type == 'comment' and entry.comment == comment:
-                return True
-            # elif entry.entry_type in ('ipv4', 'ipv6'):
-            #     pass # already covered above
-        return False
+        return any(entry.entry_type == 'comment' and entry.comment == comment
+                   for entry in self.entries)
 
     def remove_all_matching(self, address=None, name=None, comment=None):
         """
@@ -304,22 +297,14 @@ class Hosts(object):
         :param comment: A host inline comment
         :return: HostEntry instances
         """
-        results = []
-        if address or name or comment:
-            for entry in self.entries:
-                if not entry.is_real_entry():
-                    continue
-                if address:
-                    if address != entry.address:
-                        continue
-                if name:
-                    if name not in entry.names:
-                        continue
-                if comment:
-                    if comment != entry.comment:
-                        continue
-                results.append(entry)
-        return results
+        if not any((address, name, comment)):
+            return []
+
+        return [entry for entry in self.entries
+                if entry.is_real_entry()
+                and (address is None or entry.address == address)
+                and (name is None or name in entry.names)
+                and (comment is None or entry.comment == comment)]
 
     def import_url(self, url=None, force=None):
         """
