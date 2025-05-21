@@ -3,8 +3,9 @@ python-hosts
 [![codecov](https://codecov.io/gh/jonhadfield/python-hosts/branch/devel/graph/badge.svg)](https://codecov.io/gh/jonhadfield/python-hosts) [![Docs](https://img.shields.io/badge/docs-latest-brightgreen.svg?style=flat)](http://python-hosts.readthedocs.org/en/latest/)
 
 
-This is a python library for managing a hosts file. 
+This is a python library for managing a hosts file.
 It enables you to add and remove entries, or import them from a file or URL.
+It remains compatible with Python 2.7 as well as modern Python 3 releases.
 
 Documentation
 -------------
@@ -42,7 +43,7 @@ A command line client using python-hosts can be found here: https://github.com/j
 Requirements
 ------------
 
-Tested on python 2.7, 3.5, 3.6, 3.7, 3.8, 3.9, pypy and pypy3
+Tested on Python 2.7 and Python 3.5+, including PyPy variants
 
 
 License
