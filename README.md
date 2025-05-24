@@ -5,6 +5,7 @@ python-hosts
 
 This is a python library for managing a hosts file.
 It enables you to add and remove entries, or import them from a file or URL.
+Utility functions have been streamlined for easier maintenance.
 It remains compatible with Python 2.7 as well as modern Python 3 releases.
 
 Documentation

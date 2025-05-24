@@ -196,50 +196,38 @@ class Hosts(object):
         :param path: override the write path
         :return: Dictionary containing counts
         """
-        written_count = 0
-        comments_written = 0
-        blanks_written = 0
-        ipv4_entries_written = 0
-        ipv6_entries_written = 0
-        if path:
-            output_file_path = path
-        else:
-            output_file_path = self.path
+
+        counters = {
+            'total_written': 0,
+            'comments_written': 0,
+            'blanks_written': 0,
+            'ipv4_entries_written': 0,
+            'ipv6_entries_written': 0,
+        }
+        output_file_path = path if path else self.path
         try:
             with open(output_file_path, mode) as hosts_file:
-                for written_count, line in enumerate(self.entries):
-                    if line.entry_type == 'comment':
-                        hosts_file.write(line.comment + "\n")
-                        comments_written += 1
-                    if line.entry_type == 'blank':
+                for entry in self.entries:
+                    if entry.entry_type == 'comment':
+                        hosts_file.write(entry.comment + "\n")
+                        counters['comments_written'] += 1
+                    elif entry.entry_type == 'blank':
                         hosts_file.write("\n")
-                        blanks_written += 1
-                    if line.entry_type == 'ipv4':
+                        counters['blanks_written'] += 1
+                    else:
                         hosts_file.write(
                             "{0}\t{1}{2}\n".format(
-                                line.address,
-                                ' '.join(line.names),
-                                " # " + line.comment if line.comment else ""
+                                entry.address,
+                                ' '.join(entry.names),
+                                " # " + entry.comment if entry.comment else "",
                             )
                         )
-                        ipv4_entries_written += 1
-                    if line.entry_type == 'ipv6':
-                        hosts_file.write(
-                            "{0}\t{1}{2}\n".format(
-                                line.address,
-                                ' '.join(line.names),
-                                " # " + line.comment if line.comment else ""
-                            )
-                        )
-                        ipv6_entries_written += 1
+                        key = 'ipv6_entries_written' if entry.entry_type == 'ipv6' else 'ipv4_entries_written'
+                        counters[key] += 1
+                    counters['total_written'] += 1
         except Exception:
             raise UnableToWriteHosts()
-        return {'total_written': written_count + 1,
-                'comments_written': comments_written,
-                'blanks_written': blanks_written,
-                'ipv4_entries_written': ipv4_entries_written,
-                'ipv6_entries_written': ipv6_entries_written}
-
+        return counters
     @staticmethod
     def get_hosts_by_url(url=None):
         """
@@ -264,8 +252,10 @@ class Hosts(object):
             if self.find_all_matching(address=address, name=name, comment=comment):
                 return True
 
-        return any(entry.entry_type == 'comment' and entry.comment == comment
-                   for entry in self.entries)
+        if comment:
+            return any(entry.entry_type == 'comment' and entry.comment == comment
+                       for entry in self.entries)
+        return False
 
     def remove_all_matching(self, address=None, name=None, comment=None):
         """
