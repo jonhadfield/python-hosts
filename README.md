@@ -4,8 +4,9 @@ python-hosts
 
 
 This is a python library for managing a hosts file.
-It enables you to add and remove entries, or import them from a file or URL.
-Utility functions have been streamlined for easier maintenance.
+It enables you to add and remove entries, import them from a file or URL and
+query existing entries. Utility functions have been streamlined for easier
+maintenance.
 It remains compatible with Python 2.7 as well as modern Python 3 releases.
 
 Documentation
@@ -21,7 +22,7 @@ pip install python-hosts
 
 Example usage
 ------------
-Adding an entry to a hosts file
+Create a ``Hosts`` instance and add an entry::
 
     from python_hosts import Hosts, HostsEntry
     hosts = Hosts(path='hosts_test')
@@ -29,12 +30,21 @@ Adding an entry to a hosts file
     hosts.add([new_entry])
     hosts.write()
 
-Importing a list of host entries by URL
+Import entries from a URL or file::
 
-    from python_hosts import Hosts
-    hosts = Hosts(path='hosts_test')
-    hosts.import_url(url='https://gist.githubusercontent.com/jonhadfield/5b6cdf853ef629f9b187345d89157280/raw/ddfa4a069fb12bf3c1f285249d44922aeb75db3f/hosts')
+    hosts.import_url('https://example.com/hosts')
+    hosts.import_file('extra_hosts')
     hosts.write()
+
+Remove or query entries::
+
+    hosts.remove_all_matching(name='example')
+    hosts.exists(address='1.2.3.4')
+
+Entries can also be merged with existing ones::
+
+    new_entry = HostsEntry(entry_type='ipv4', address='1.2.3.4', names=['alias'])
+    hosts.add([new_entry], merge_names=True)
 
 CLI
 ---
