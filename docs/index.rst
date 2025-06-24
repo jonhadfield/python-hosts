@@ -2,7 +2,8 @@
 python hosts
 ============
 
-A python library for managing a hosts file.
+A Python library for managing hosts files. It can add or remove entries and
+import records from other files or remote URLs.
 
 
 Getting started
@@ -13,6 +14,7 @@ Getting started
 
    installation
    usage
+   ../CHANGELOG
 
 
 API

@@ -21,3 +21,17 @@ Usage
 **Write entries**::
 
  my_hosts.write()
+
+**Import entries from a URL**::
+
+ from python_hosts import Hosts
+ my_hosts = Hosts(path='hosts_test')
+ my_hosts.import_url(url='https://example.com/hosts')
+ my_hosts.write()
+
+**Import entries from another file**::
+
+ from python_hosts import Hosts
+ my_hosts = Hosts(path='hosts_test')
+ my_hosts.import_file(import_file_path='other_hosts')
+ my_hosts.write()
