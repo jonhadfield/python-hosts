@@ -1,6 +1,10 @@
 Changelog
 =========
 
+1.1.0  
+
+- Add unicode support for comments and normalisation for names.
+
 1.0.7
 
 - Fix import file issue where inline comments would be stripped. Thanks [mago960806](https://github.com/mago960806).
