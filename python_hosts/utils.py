@@ -2,10 +2,22 @@
 """
 This module contains utility functions used by the Hosts and HostsEntry methods
 """
+from __future__ import unicode_literals
 import os
 import re
+import sys
 
 import socket
+
+# Import Unicode utilities for hostname validation
+try:
+    from python_hosts.unicode_utils import ensure_text, normalize_hostname
+except ImportError:
+    # Fallback for import during initialization
+    def ensure_text(s):
+        return s
+    def normalize_hostname(s):
+        return s
 
 
 def is_ipv4(entry):
@@ -28,10 +40,56 @@ def is_ipv6(entry):
 
 def valid_hostnames(hostname_list):
     """Return ``True`` if all items in ``hostname_list`` are valid hostnames."""
-    allowed = re.compile(r'(?!-)[A-Z\d-]{1,63}(?<!-)$', re.IGNORECASE)
-    return all(len(entry) <= 255 and
-               all(allowed.match(x) for x in entry.split('.'))
-               for entry in hostname_list)
+    if not hostname_list:
+        return False
+    
+    # ASCII hostname pattern
+    allowed_ascii = re.compile(r'(?!-)[A-Z\d-]{1,63}(?<!-)$', re.IGNORECASE)
+    
+    for entry in hostname_list:
+        # Ensure it's a text string
+        entry = ensure_text(entry)
+        
+        if not entry or len(entry) > 255:
+            return False
+            
+        # Try to normalize the hostname (handles IDN conversion)
+        try:
+            normalized = normalize_hostname(entry)
+            
+            # Check if normalized hostname is valid ASCII
+            if len(normalized) <= 255 and all(allowed_ascii.match(x) for x in normalized.split('.')):
+                continue
+                
+            # If normalization didn't work, check if it's already ASCII-compatible
+            if all(ord(c) < 128 for c in entry):
+                if all(allowed_ascii.match(x) for x in entry.split('.')):
+                    continue
+                    
+            # For Unicode hostnames, check basic structure
+            # Allow Unicode characters in hostname parts
+            parts = entry.split('.')
+            if not parts:
+                return False
+                
+            valid_parts = True
+            for part in parts:
+                if not part or len(part) > 63:
+                    valid_parts = False
+                    break
+                # Check that part doesn't start or end with hyphen
+                if part.startswith('-') or part.endswith('-'):
+                    valid_parts = False
+                    break
+                    
+            if not valid_parts:
+                return False
+                
+        except Exception:
+            # If any error occurs during validation, be conservative
+            return False
+            
+    return True
 
 
 def is_readable(path=None):

@@ -11,6 +11,7 @@ based machine respectively. Each entry being represented as an instance
 of the HostsEntry class.
 """
 
+from __future__ import unicode_literals
 import sys
 
 try:
@@ -21,6 +22,9 @@ from python_hosts.utils import (is_ipv4, is_ipv6, is_readable, valid_hostnames,
                                 dedupe_list)
 from python_hosts.exception import (InvalidIPv6Address, InvalidIPv4Address,
                                     UnableToWriteHosts)
+from python_hosts.unicode_utils import (ensure_text, ensure_binary, safe_open,
+                                        normalize_hostname, normalize_comment,
+                                        text_type, string_types)
 
 
 class HostsEntry(object):
@@ -61,10 +65,16 @@ class HostsEntry(object):
             if not is_ipv6(address):
                 raise InvalidIPv6Address()
 
-        self.entry_type = entry_type
-        self.address = address
-        self.comment = comment
-        self.names = names
+        # Normalize all string inputs to Unicode
+        self.entry_type = ensure_text(entry_type) if entry_type else entry_type
+        self.address = ensure_text(address) if address else address
+        self.comment = normalize_comment(comment) if comment else comment
+        
+        # Normalize hostnames to Unicode and handle IDN
+        if names:
+            self.names = [normalize_hostname(name) for name in names]
+        else:
+            self.names = names
 
     def is_real_entry(self):
         return self.entry_type in ('ipv4', 'ipv6')
@@ -98,16 +108,18 @@ class HostsEntry(object):
         :param hosts_entry: A line from the hosts file
         :return: 'comment' | 'blank' | 'ipv4' | 'ipv6'
         """
-        if hosts_entry and isinstance(hosts_entry, str):
+        if hosts_entry and isinstance(hosts_entry, string_types):
+            # Ensure the entry is Unicode text
+            hosts_entry = ensure_text(hosts_entry)
             entry = hosts_entry.strip()
             if not entry or not entry[0] or entry[0] == "\n":
                 return 'blank'
             if entry[0] == "#":
                 return 'comment'
             entry_chunks = entry.split()
-            if is_ipv6(entry_chunks[0]):
+            if entry_chunks and is_ipv6(entry_chunks[0]):
                 return 'ipv6'
-            if is_ipv4(entry_chunks[0]):
+            if entry_chunks and is_ipv4(entry_chunks[0]):
                 return 'ipv4'
 
     @staticmethod
@@ -117,14 +129,17 @@ class HostsEntry(object):
         :param entry: A line from the hosts file
         :return: An instance of HostsEntry
         """
+        # Ensure the entry is Unicode text
+        entry = ensure_text(entry)
+        
         split_line = entry.split('#', 1)
         line = split_line[0].strip().split()
         inline_comment = split_line[1].strip() if len(split_line) == 2 else None
 
-        if is_ipv4(line[0]) and valid_hostnames(line[1:]):
+        if line and is_ipv4(line[0]) and valid_hostnames(line[1:]):
             return HostsEntry('ipv4', address=line[0], names=line[1:],
                               comment=inline_comment)
-        if is_ipv6(line[0]) and valid_hostnames(line[1:]):
+        if line and is_ipv6(line[0]) and valid_hostnames(line[1:]):
             return HostsEntry('ipv6', address=line[0], names=line[1:],
                               comment=inline_comment)
         return False
@@ -206,7 +221,7 @@ class Hosts(object):
         }
         output_file_path = path if path else self.path
         try:
-            with open(output_file_path, mode) as hosts_file:
+            with safe_open(output_file_path, mode, encoding='utf-8') as hosts_file:
                 for entry in self.entries:
                     if entry.entry_type == 'comment':
                         hosts_file.write(entry.comment + "\n")
@@ -303,13 +318,19 @@ class Hosts(object):
         :param url: The URL of where to download a hosts file
         :return: Counts reflecting the attempted additions
         """
-        file_contents = self.get_hosts_by_url(url=url).decode('utf-8')
+        file_contents = self.get_hosts_by_url(url=url)
+        # Handle both Python 2 and 3 URL content
+        if hasattr(file_contents, 'decode'):
+            file_contents = file_contents.decode('utf-8')
+        file_contents = ensure_text(file_contents)
         file_contents = file_contents.rstrip().replace('^M', '\n')
         file_contents = file_contents.rstrip().replace('\r\n', '\n')
         lines = file_contents.split('\n')
         skipped = 0
         import_entries = []
         for line in lines:
+            # Ensure each line is Unicode text
+            line = ensure_text(line)
             stripped_entry = line.strip()
             if (not stripped_entry) or (stripped_entry.startswith('#')):
                 skipped += 1
@@ -337,8 +358,10 @@ class Hosts(object):
         invalid_count = 0
         if is_readable(import_file_path):
             import_entries = []
-            with open(import_file_path, 'r') as infile:
+            with safe_open(import_file_path, 'r', encoding='utf-8') as infile:
                 for line in infile:
+                    # Ensure line is Unicode text
+                    line = ensure_text(line)
                     stripped_entry = line.strip()
                     if (not stripped_entry) or (stripped_entry.startswith('#')):
                         skipped += 1
@@ -463,9 +486,11 @@ class Hosts(object):
         :return: None
         """
         try:
-            with open(self.path, 'r') as hosts_file:
+            with safe_open(self.path, 'r', encoding='utf-8') as hosts_file:
                 hosts_entries = [line for line in hosts_file]
                 for hosts_entry in hosts_entries:
+                    # Ensure line is Unicode text
+                    hosts_entry = ensure_text(hosts_entry)
                     entry_type = HostsEntry.get_entry_type(hosts_entry)
                     if entry_type == "comment":
                         hosts_entry = hosts_entry.replace("\r", "")

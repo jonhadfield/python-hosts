@@ -53,11 +53,14 @@ This is a Python library for managing hosts files (`/etc/hosts` on Unix, `C:\Win
 - Validate IPv4/IPv6 addresses and hostnames
 - Handle comments and blank lines
 - Support for duplicate name detection with `allow_name_dupliction` parameter
+- **Unicode Support**: Full Unicode support for hostnames and comments (Python 2.7 & 3.x compatible)
+- **IDN Support**: Automatic conversion of internationalized domain names to ASCII-compatible encoding
 
 ### Module Structure
 - `python_hosts/hosts.py` - Main classes (`Hosts`, `HostsEntry`)
 - `python_hosts/utils.py` - Utility functions for validation (`is_ipv4`, `is_ipv6`, `valid_hostnames`)
 - `python_hosts/exception.py` - Custom exceptions (`HostsException`, `InvalidIPv4Address`, etc.)
+- `python_hosts/unicode_utils.py` - Unicode compatibility utilities for Python 2/3 support
 - `python_hosts/__init__.py` - Package exports
 
 ### Testing
