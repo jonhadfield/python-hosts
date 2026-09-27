@@ -21,6 +21,7 @@ except ImportError:  # pragma: no cover
 from python_hosts.utils import (is_ipv4, is_ipv6, is_readable, valid_hostnames,
                                 dedupe_list)
 from python_hosts.exception import (InvalidIPv6Address, InvalidIPv4Address,
+                                    InvalidComment, InvalidHostsEntry,
                                     UnableToWriteHosts)
 from python_hosts.unicode_utils import (ensure_text, ensure_binary, safe_open,
                                         normalize_hostname, normalize_comment,
@@ -48,20 +49,20 @@ class HostsEntry(object):
                                                 'ipv6',
                                                 'comment',
                                                 'blank'):
-            raise Exception('entry_type invalid or not specified')
+            raise InvalidHostsEntry('entry_type invalid or not specified')
 
         if entry_type == 'comment' and not comment:
-            raise Exception('entry_type comment supplied without value.')
+            raise InvalidComment('entry_type comment supplied without value.')
 
         if entry_type == 'ipv4':
             if not all((address, names)):
-                raise Exception('Address and Name(s) must be specified.')
+                raise InvalidHostsEntry('Address and Name(s) must be specified.')
             if not is_ipv4(address):
                 raise InvalidIPv4Address()
 
         if entry_type == 'ipv6':
             if not all((address, names)):
-                raise Exception('Address and Name(s) must be specified.')
+                raise InvalidHostsEntry('Address and Name(s) must be specified.')
             if not is_ipv6(address):
                 raise InvalidIPv6Address()
 
@@ -100,6 +101,7 @@ class HostsEntry(object):
             return "TYPE = {0}, COMMENT = {1}".format(self.entry_type, self.comment)
         elif self.entry_type == 'blank':
             return "TYPE = {0}".format(self.entry_type)
+        return ''
 
     @staticmethod
     def get_entry_type(hosts_entry=None):
@@ -121,6 +123,7 @@ class HostsEntry(object):
                 return 'ipv6'
             if entry_chunks and is_ipv4(entry_chunks[0]):
                 return 'ipv4'
+        return None
 
     @staticmethod
     def str_to_hostentry(entry):
@@ -396,6 +399,8 @@ class Hosts(object):
         :param merge_names: Merge names where address already exists
         :return: The counts of successes and failures
         """
+        if entries is None:
+            entries = []
         ipv4_count = 0
         ipv6_count = 0
         comment_count = 0
@@ -403,12 +408,21 @@ class Hosts(object):
         duplicate_count = 0
         replaced_count = 0
         import_entries = []
-        existing_addresses = [x.address for x in self.entries if x.address]
-        existing_names = []
-        for item in self.entries:
-            if item.names:
-                existing_names.extend(item.names)
-        existing_names = dedupe_list(existing_names)
+
+        def refresh_lookups():
+            """Rebuild address/name sets from current + pending entries."""
+            addresses = [x.address for x in self.entries if x.address]
+            addresses.extend(x.address for x in import_entries if x.address)
+            names = []
+            for item in self.entries:
+                if item.names:
+                    names.extend(item.names)
+            for item in import_entries:
+                if item.names:
+                    names.extend(item.names)
+            return addresses, dedupe_list(names)
+
+        existing_addresses, existing_names = refresh_lookups()
         for entry in entries:
             if entry.entry_type == 'comment':
                 entry.comment = entry.comment.strip()
@@ -424,6 +438,7 @@ class Hosts(object):
                     elif force:
                         for name in entry.names:
                             self.remove_all_matching(name=name)
+                        existing_addresses, existing_names = refresh_lookups()
                         import_entries.append(entry)
                     else:
                         duplicate_count += 1
@@ -439,27 +454,50 @@ class Hosts(object):
                         if entry.address == existing_entry.address:
                             entry_names = existing_entry.names
                             break
+                    # Also consider names already queued in this batch
+                    for pending in import_entries:
+                        if entry.address == pending.address and pending.names:
+                            entry_names = pending.names
+                            break
                     # merge names with that entry
                     merged_names = list(set(entry.names + entry_names))
                     # remove all matching
                     self.remove_all_matching(address=entry.address)
+                    import_entries = [e for e in import_entries
+                                     if e.address != entry.address]
                     # append merged entry
                     entry.names = merged_names
                     import_entries.append(entry)
+                    existing_addresses, existing_names = refresh_lookups()
+                    continue
                 elif force:
                     self.remove_all_matching(address=entry.address)
+                    import_entries = [e for e in import_entries
+                                     if e.address != entry.address]
                     replaced_count += 1
                     import_entries.append(entry)
+                    existing_addresses, existing_names = refresh_lookups()
+                    continue
             elif set(entry.names).intersection(existing_names):
                 if not force:
                     duplicate_count += 1
                 else:
                     for name in entry.names:
                         self.remove_all_matching(name=name)
+                    # Drop pending entries that share any of these names
+                    import_entries = [
+                        e for e in import_entries
+                        if not (e.names and set(e.names).intersection(
+                            entry.names))
+                    ]
                     replaced_count += 1
                     import_entries.append(entry)
+                    existing_addresses, existing_names = refresh_lookups()
+                    continue
             else:
                 import_entries.append(entry)
+
+            existing_addresses, existing_names = refresh_lookups()
 
         for item in import_entries:
             if item.entry_type == 'comment':

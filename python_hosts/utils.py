@@ -9,31 +9,46 @@ import sys
 
 import socket
 
-# Import Unicode utilities for hostname validation
-try:
-    from python_hosts.unicode_utils import ensure_text, normalize_hostname
-except ImportError:
-    # Fallback for import during initialization
-    def ensure_text(s):
-        return s
-    def normalize_hostname(s):
-        return s
+from python_hosts.unicode_utils import (ensure_text, ensure_binary,
+                                        normalize_hostname)
+
+# Four dotted-decimal octets; rejects abbreviated forms accepted by inet_aton
+# such as "127.1" or "1.2.3".
+_IPV4_RE = re.compile(
+    r'^(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.){3}'
+    r'(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)$'
+)
+
+
+def _socket_address(entry):
+    """Return address as a native socket-friendly string (bytes on Py2)."""
+    text = ensure_text(entry)
+    if sys.version_info[0] == 2:
+        return ensure_binary(text, encoding='ascii')
+    return text
 
 
 def is_ipv4(entry):
     """Return ``True`` if ``entry`` is a valid IPv4 address."""
+    if not entry:
+        return False
+    entry = ensure_text(entry).strip()
+    if not _IPV4_RE.match(entry):
+        return False
     try:
-        socket.inet_aton(entry)
-    except socket.error:
+        socket.inet_aton(_socket_address(entry))
+    except (socket.error, UnicodeError, TypeError, ValueError):
         return False
     return True
 
 
 def is_ipv6(entry):
     """Return ``True`` if ``entry`` is a valid IPv6 address."""
+    if not entry:
+        return False
     try:
-        socket.inet_pton(socket.AF_INET6, entry)
-    except socket.error:
+        socket.inet_pton(socket.AF_INET6, _socket_address(entry))
+    except (socket.error, UnicodeError, TypeError, ValueError, AttributeError):
         return False
     return True
 

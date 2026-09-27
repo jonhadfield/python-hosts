@@ -17,7 +17,8 @@ from python_hosts.utils import (is_readable, is_ipv4, is_ipv6, # noqa: F401
                                 valid_hostnames) # noqa: F401
 from python_hosts.exception import (HostsException, HostsEntryException, # noqa: F401
                                     InvalidIPv4Address, InvalidIPv6Address,
-                                    InvalidComment)
+                                    InvalidComment, InvalidHostsEntry, # noqa: F401
+                                    UnableToWriteHosts) # noqa: F401
 from python_hosts.unicode_utils import (ensure_text, ensure_binary, # noqa: F401
                                         normalize_hostname, normalize_comment)
 

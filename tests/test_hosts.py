@@ -12,6 +12,18 @@ from python_hosts import exception
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
+TEST_FILES_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'test_files'))
+
+
+def local_test_file_url(filename):
+    """Return a file:// URL for a file under test_files/ (works offline)."""
+    path = os.path.abspath(os.path.join(TEST_FILES_DIR, filename))
+    try:
+        from urllib.request import pathname2url
+    except ImportError:  # Python 2
+        from urllib import pathname2url
+    return 'file:' + pathname2url(path)
+
 
 def test_find_all_matching_by_name_address_comment(tmpdir):
     """
@@ -138,7 +150,7 @@ def test_import_from_url_without_force(tmpdir):
     hosts_file = tmpdir.mkdir("etc").join("hosts")
     hosts_file.write("1.2.3.4\texample1.com example2.com example3.com\n")
     hosts = Hosts(path=hosts_file.strpath)
-    import_url = "https://raw.githubusercontent.com/jonhadfield/python-hosts/devel/test_files/hosts_win3"
+    import_url = local_test_file_url('hosts_win3')
     hosts.import_url(url=import_url)
     assert hosts.exists(names=['example3.com'])
 
@@ -150,7 +162,7 @@ def test_import_from_url_with_force(tmpdir):
     hosts_file = tmpdir.mkdir("etc").join("hosts")
     hosts_file.write("1.2.3.4\texample1.com example2.com example3.com\n")
     hosts = Hosts(path=hosts_file.strpath)
-    import_url = "https://raw.githubusercontent.com/jonhadfield/python-hosts/devel/test_files/hosts_win3"
+    import_url = local_test_file_url('hosts_win3')
     hosts.import_url(url=import_url, force=True)
     assert not hosts.exists(names=['example3.com'])
 
@@ -275,7 +287,7 @@ def test_import_from_url_counters_for_part_success(tmpdir):
     hosts_file = tmpdir.mkdir("etc").join("hosts")
     hosts_file.write("6.6.6.6\texample.com\n")
     hosts = Hosts(path=hosts_file.strpath)
-    import_url = "https://raw.githubusercontent.com/jonhadfield/python-hosts/devel/test_files/hosts"
+    import_url = local_test_file_url('hosts')
     result = hosts.import_url(url=import_url)
     add_result = result.get('add_result')
     write_result = result.get('write_result')
@@ -482,14 +494,15 @@ def test_import_from_url(tmpdir):
     hosts_file = tmpdir.mkdir("etc").join("hosts")
     hosts_file.write("6.6.6.6\texample.com\n")
     hosts = Hosts(path=hosts_file.strpath)
-    import_url = "https://raw.githubusercontent.com/jonhadfield/python-hosts/devel/test_files/hosts_win"
+    import_url = local_test_file_url('hosts_win')
     import_url_result = hosts.import_url(url=import_url)
     import_url_add_result = import_url_result.get('add_result')
     import_url_write_result = import_url_result.get('write_result')
     assert not import_url_result == 'failed'
-    assert import_url_add_result.get('ipv4_count') == 24
-    assert import_url_write_result.get('ipv4_entries_written') == 25
-    assert import_url_write_result.get('total_written') == 25
+    assert import_url_add_result.get('ipv4_count') == 23
+    assert import_url_add_result.get('duplicate_count') == 1
+    assert import_url_write_result.get('ipv4_entries_written') == 24
+    assert import_url_write_result.get('total_written') == 24
 
 
 def test_import_file_increments_invalid_counter(tmpdir):
@@ -666,11 +679,11 @@ def test_hostsentry_initialisation_failure_with_invalid_type():
     """
     Test initialiser returns an exception if the type is invalid
     """
-    with pytest.raises(Exception):
+    with pytest.raises(exception.InvalidHostsEntry):
         HostsEntry()
-    with pytest.raises(Exception):
+    with pytest.raises(exception.InvalidHostsEntry):
         HostsEntry('IPv4')
-    with pytest.raises(Exception):
+    with pytest.raises(exception.InvalidHostsEntry):
         HostsEntry('IP')
 
 
@@ -679,9 +692,9 @@ def test_hostsentry_initialisation_failure_with_missing_comment():
     Test initialiser returns an exception if comment type
     is set by no comment is provided
     """
-    with pytest.raises(Exception):
+    with pytest.raises(exception.InvalidComment):
         HostsEntry(entry_type='comment')
-    with pytest.raises(Exception):
+    with pytest.raises(exception.InvalidComment):
         HostsEntry(entry_type='comment', address='1.2.3.4')
 
 
@@ -690,15 +703,15 @@ def test_hostsentry_initialisation_failure_with_missing_name_or_address():
     Test initialiser returns an exception if type is ipv4|ipv6
     but address or names (or both) are missing
     """
-    with pytest.raises(Exception):
+    with pytest.raises(exception.InvalidHostsEntry):
         HostsEntry(entry_type='ipv4')
-    with pytest.raises(Exception):
+    with pytest.raises(exception.InvalidHostsEntry):
         HostsEntry(entry_type='ipv4', address='1.2.3.4')
-    with pytest.raises(Exception):
+    with pytest.raises(exception.InvalidHostsEntry):
         HostsEntry(entry_type='ipv4', names=['example.com'])
-    with pytest.raises(Exception):
+    with pytest.raises(exception.InvalidHostsEntry):
         HostsEntry(entry_type='ipv6', address='fe80::1%lo0')
-    with pytest.raises(Exception):
+    with pytest.raises(exception.InvalidHostsEntry):
         HostsEntry(entry_type='ipv6', names=['example.com'])
 
 
@@ -814,3 +827,61 @@ def test_remove_all_matching_failure(tmpdir):
         hosts = Hosts(path=hosts_file.strpath)
         hosts.remove_all_matching()
         hosts.write()
+
+
+def test_add_batch_rejects_duplicate_names_in_same_call(tmpdir):
+    """
+    Two entries in one add() call that share a name must not both be added
+    unless allow_name_duplication is set.
+    """
+    hosts_file = tmpdir.mkdir("etc").join("hosts")
+    hosts_file.write("1.1.1.1\texisting.com\n")
+    hosts = Hosts(path=hosts_file.strpath)
+    first = HostsEntry(entry_type='ipv4', address='2.2.2.2', names=['dup.com'])
+    second = HostsEntry(entry_type='ipv4', address='3.3.3.3', names=['dup.com'])
+    result = hosts.add([first, second])
+    assert result['ipv4_count'] == 1
+    assert result['duplicate_count'] == 1
+    assert hosts.exists(address='2.2.2.2', names=['dup.com'])
+    assert not hosts.exists(address='3.3.3.3')
+
+
+def test_add_batch_rejects_duplicate_addresses_in_same_call(tmpdir):
+    """
+    Two entries in one add() call that share an address must not both be added.
+    """
+    hosts_file = tmpdir.mkdir("etc").join("hosts")
+    hosts_file.write("1.1.1.1\texisting.com\n")
+    hosts = Hosts(path=hosts_file.strpath)
+    first = HostsEntry(entry_type='ipv4', address='5.5.5.5', names=['a.com'])
+    second = HostsEntry(entry_type='ipv4', address='5.5.5.5', names=['b.com'])
+    result = hosts.add([first, second])
+    assert result['ipv4_count'] == 1
+    assert result['duplicate_count'] == 1
+    assert hosts.exists(names=['a.com'])
+    assert not hosts.exists(names=['b.com'])
+
+
+def test_add_with_none_entries_is_noop(tmpdir):
+    """add(None) should be safe and add nothing."""
+    hosts_file = tmpdir.mkdir("etc").join("hosts")
+    hosts_file.write("1.1.1.1\texisting.com\n")
+    hosts = Hosts(path=hosts_file.strpath)
+    result = hosts.add(None)
+    assert result['ipv4_count'] == 0
+    assert hosts.count() == 1
+
+
+def test_add_batch_merge_names_across_same_call(tmpdir):
+    """merge_names should combine names when the same address appears twice."""
+    hosts_file = tmpdir.mkdir("etc").join("hosts")
+    hosts_file.write("8.8.8.8\tfirst.com\n")
+    hosts = Hosts(path=hosts_file.strpath)
+    first = HostsEntry(entry_type='ipv4', address='8.8.8.8', names=['second.com'])
+    second = HostsEntry(entry_type='ipv4', address='8.8.8.8', names=['third.com'])
+    hosts.add([first, second], merge_names=True)
+    assert hosts.count() == 1
+    names = hosts.entries[0].names
+    assert 'first.com' in names
+    assert 'second.com' in names
+    assert 'third.com' in names

@@ -18,6 +18,19 @@ def test_ipv4_validation_failure():
     assert not is_ipv4('256.8.8.8')
 
 
+def test_ipv4_rejects_abbreviated_forms():
+    """inet_aton accepts forms like 127.1; hosts files should not."""
+    assert not is_ipv4('127.1')
+    assert not is_ipv4('1.2.3')
+    assert not is_ipv4('')
+    assert not is_ipv4(None)
+
+
+def test_ipv6_rejects_empty():
+    """Empty or None is not a valid IPv6 address."""
+    assert not is_ipv6('')
+    assert not is_ipv6(None)
+
 def test_ipv6_validation_success():
     """
     Test function returns True if valid IPv4 address is specified

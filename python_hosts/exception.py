@@ -46,3 +46,10 @@ class InvalidComment(HostsEntryException):
     invalid comment
     """
     pass
+
+
+class InvalidHostsEntry(HostsEntryException):
+    """ Raised when a HostsEntry cannot be created due to missing or
+    invalid attributes (other than address format).
+    """
+    pass
