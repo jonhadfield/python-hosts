@@ -11,7 +11,7 @@ based machine respectively. Each entry being represented as an instance
 of the HostsEntry class.
 """
 
-from __future__ import unicode_literals
+from __future__ import absolute_import, unicode_literals
 import sys
 
 try:
@@ -23,9 +23,9 @@ from python_hosts.utils import (is_ipv4, is_ipv6, is_readable, valid_hostnames,
 from python_hosts.exception import (InvalidIPv6Address, InvalidIPv4Address,
                                     InvalidComment, InvalidHostsEntry,
                                     UnableToWriteHosts)
-from python_hosts.unicode_utils import (ensure_text, ensure_binary, safe_open,
+from python_hosts.unicode_utils import (ensure_text, safe_open, native_string,
                                         normalize_hostname, normalize_comment,
-                                        text_type, string_types)
+                                        string_types)
 
 
 class HostsEntry(object):
@@ -89,7 +89,7 @@ class HostsEntry(object):
                    self.comment
                    )
 
-    def __str__(self):
+    def __unicode__(self):
         if self.entry_type in ('ipv4', 'ipv6'):
             return "TYPE={0}, ADDR={1}, NAMES={2}, COMMENT={3}".format(
                 self.entry_type,
@@ -98,10 +98,15 @@ class HostsEntry(object):
                 self.comment
                 )
         elif self.entry_type == 'comment':
-            return "TYPE = {0}, COMMENT = {1}".format(self.entry_type, self.comment)
+            return "TYPE = {0}, COMMENT = {1}".format(self.entry_type,
+                                                      self.comment)
         elif self.entry_type == 'blank':
             return "TYPE = {0}".format(self.entry_type)
         return ''
+
+    def __str__(self):
+        # Py2 __str__ must return bytes; non-ASCII Unicode raises EncodeError
+        return native_string(self.__unicode__())
 
     @staticmethod
     def get_entry_type(hosts_entry=None):
@@ -175,11 +180,14 @@ class Hosts(object):
             self.path, self.entries
         )
 
-    def __str__(self):
+    def __unicode__(self):
         output = ('PATH:{0}\n'.format(self.path))
         for entry in self.entries:
-            output += str(entry) + "\n"
+            output += entry.__unicode__() + "\n"
         return output
+
+    def __str__(self):
+        return native_string(self.__unicode__())
 
     def count(self):
         """ Get a count of the number of host entries
@@ -243,8 +251,9 @@ class Hosts(object):
                         key = 'ipv6_entries_written' if entry.entry_type == 'ipv6' else 'ipv4_entries_written'
                         counters[key] += 1
                     counters['total_written'] += 1
-        except Exception:
-            raise UnableToWriteHosts()
+        except Exception as exc:
+            # Include the cause for debugging; avoid Py3-only "raise from"
+            raise UnableToWriteHosts(str(exc))
         return counters
     @staticmethod
     def get_hosts_by_url(url=None):
@@ -259,12 +268,13 @@ class Hosts(object):
     def exists(self, address=None, names=None, comment=None):
         """
         Determine if the supplied address and/or names, or comment, exists in
-         a HostsEntry within Hosts
+        a HostsEntry within Hosts
+
         :param address: An ipv4 or ipv6 address to search for
         :param names: A list of names to search for
         :param comment: A comment to search for
         :return: True if a supplied address, name, or comment is found.
-            Otherwise, False.
+                 Otherwise, False.
         """
         for name in (names or [None]):
             if self.find_all_matching(address=address, name=name, comment=comment):
@@ -299,7 +309,8 @@ class Hosts(object):
     def find_all_matching(self, address=None, name=None, comment=None):
         """
         Return all HostsEntry instances from the Hosts object
-          where the supplied ip address or name matches
+        where the supplied ip address or name matches
+
         :param address: An ipv4 or ipv6 address
         :param name: A host name
         :param comment: A host inline comment
@@ -317,7 +328,8 @@ class Hosts(object):
     def import_url(self, url=None, force=None):
         """
         Read a list of host entries from a URL, convert them into instances
-          of HostsEntry and then append to the list of entries in Hosts
+        of HostsEntry and then append to the list of entries in Hosts
+
         :param url: The URL of where to download a hosts file
         :return: Counts reflecting the attempted additions
         """
@@ -390,12 +402,13 @@ class Hosts(object):
             allow_name_duplication=False, merge_names=False):
         """
         Add instances of HostsEntry to the instance of Hosts.
+
         :param entries: A list of instances of HostsEntry
         :param force: Remove matching before adding
         :param allow_address_duplication: Allow using multiple entries
-         for same address
+            for same address
         :param allow_name_duplication: Allow using multiple entries
-         for same name
+            for same name
         :param merge_names: Merge names where address already exists
         :return: The counts of successes and failures
         """
@@ -519,8 +532,9 @@ class Hosts(object):
     def populate_entries(self):
         """
         Called by the initialiser of Hosts. This reads the entries from the
-         local hosts file, converts them into instances of HostsEntry and adds
-         them to the Hosts list of entries.
+        local hosts file, converts them into instances of HostsEntry and adds
+        them to the Hosts list of entries.
+
         :return: None
         """
         try:

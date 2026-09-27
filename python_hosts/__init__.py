@@ -20,6 +20,7 @@ from python_hosts.exception import (HostsException, HostsEntryException, # noqa:
                                     InvalidComment, InvalidHostsEntry, # noqa: F401
                                     UnableToWriteHosts) # noqa: F401
 from python_hosts.unicode_utils import (ensure_text, ensure_binary, # noqa: F401
-                                        normalize_hostname, normalize_comment)
+                                        normalize_hostname, normalize_comment,
+                                        native_string, safe_open)  # noqa: F401
 
 name = "python_hosts"

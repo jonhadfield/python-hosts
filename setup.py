@@ -1,5 +1,7 @@
 #!/usr/bin/env python
+from __future__ import absolute_import
 
+import io
 import os
 import sys
 
@@ -16,7 +18,8 @@ if sys.argv[-1] == 'tag':
     os.system("git push --tags")
     sys.exit()
 
-readme = open('README.md').read()
+with io.open('README.md', encoding='utf-8') as readme_file:
+    readme = readme_file.read()
 
 requirements = []
 

@@ -187,6 +187,32 @@ def test_unicode_compatibility_functions():
     assert isinstance(ensure_binary(unicode_string), bytes)
 
 
+def test_str_and_unicode_with_non_ascii_comment():
+    """
+    ``str()`` must not raise on non-ASCII comments (Py2 EncodeError trap).
+    """
+    from python_hosts.unicode_utils import PY2, text_type
+
+    entry = HostsEntry(
+        entry_type='ipv4',
+        address='192.168.1.1',
+        names=['example.com'],
+        comment='Комментарий'
+    )
+    as_text = entry.__unicode__()
+    assert isinstance(as_text, text_type)
+    assert 'example.com' in as_text
+    assert 'Комментарий' in as_text
+
+    as_str = str(entry)
+    if PY2:
+        assert isinstance(as_str, bytes)
+        assert as_str == as_text.encode('utf-8')
+    else:
+        assert isinstance(as_str, text_type)
+        assert as_str == as_text
+
+
 def test_mixed_ascii_unicode_hostnames(tmpdir):
     """Test handling mixed ASCII and Unicode hostnames."""
     hosts_file = tmpdir.mkdir("etc").join("hosts")

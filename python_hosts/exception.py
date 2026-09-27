@@ -6,6 +6,7 @@ hosts.exceptions
 
 All exceptions used in the hosts code base are defined here.
 """
+from __future__ import absolute_import, unicode_literals
 
 
 class HostsException(Exception):
@@ -20,7 +21,7 @@ class UnableToWriteHosts(HostsException):
     pass
 
 
-class HostsEntryException(Exception):
+class HostsEntryException(HostsException):
     """ Base exception class. All HostsEntry-specific exceptions should
     subclass this class.
     """

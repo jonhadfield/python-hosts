@@ -2,7 +2,7 @@
 """
 This module contains utility functions used by the Hosts and HostsEntry methods
 """
-from __future__ import unicode_literals
+from __future__ import absolute_import, unicode_literals
 import os
 import re
 import sys
