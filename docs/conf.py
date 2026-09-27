@@ -50,9 +50,9 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'python_hosts'
-copyright = u'2015, Jon Hadfield'
-author = u'Jon Hadfield'
+project = 'python-hosts'
+copyright = '2015–2026, Jon Hadfield'
+author = 'Jon Hadfield'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -97,6 +97,7 @@ exclude_patterns = ['_build']
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
+pygments_dark_style = 'monokai'
 
 # A list of ignored prefixes for module index sorting.
 # modindex_common_prefix = []
@@ -109,24 +110,15 @@ todo_include_todos = True
 
 # -- Options for HTML output ----------------------------------------------
 
-# The theme to use for HTML and HTML Help pages.  See the documentation for
-# a list of builtin themes.
-html_theme = 'sphinx_rtd_theme'
-
-# Theme options are theme-specific and customize the look and feel of a theme
-# further.  For a list of options available for each theme, see the
-# documentation.
-# html_theme_options = {}
-
-# Add any paths that contain custom themes here, relative to this directory.
-# html_theme_path is not needed for modern sphinx_rtd_theme (installed as a package).
-
-# The name for this set of Sphinx documents.  If None, it defaults to
-# "<project> v<release> documentation".
-# html_title = None
-
-# A shorter title for the navigation bar.  Default is the same as html_title.
-# html_short_title = None
+# Modern accessible theme with light/dark mode (https://pradyunsg.me/furo/)
+html_theme = 'furo'
+html_title = 'python-hosts'
+html_theme_options = {
+    'source_repository': 'https://github.com/jonhadfield/python-hosts/',
+    'source_branch': 'devel',
+    'source_directory': 'docs/',
+    'navigation_with_keys': True,
+}
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.

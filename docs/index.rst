@@ -1,9 +1,9 @@
 ============
-python hosts
+python-hosts
 ============
 
-A python library for managing a hosts file.
-
+A Python library for managing hosts files on Unix and Windows, compatible with
+Python 2.7 and modern Python 3.
 
 Getting started
 ---------------
