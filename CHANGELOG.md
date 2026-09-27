@@ -1,6 +1,13 @@
 Changelog
 =========
 
+1.1.3
+
+- Fix duplicate name/address detection within a single `add()` call.
+- Tighten IPv4 validation so abbreviated forms like `127.1` are rejected.
+- Raise typed `InvalidHostsEntry` / `InvalidComment` instead of bare `Exception`.
+- Improve Python 2.7 tox pins and make URL import tests run offline.
+
 1.1.0  
 
 - Add unicode support for comments and normalisation for names.
